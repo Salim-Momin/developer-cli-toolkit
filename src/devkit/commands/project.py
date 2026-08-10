@@ -301,6 +301,49 @@ def detect_project_health_items(path: Path) -> dict[str, bool]:
         "Git Repository": (path / ".git").exists(),
     }
 
+def calculate_health_score(health_items: dict[str, bool]) -> tuple[int, list[str]]:
+    """Calculate a basic project health score and recommendations."""
+
+    weights = {
+        "README": 15,
+        ".gitignore": 15,
+        "Tests": 30,
+        "Environment Template": 15,
+        "Docker": 5,
+        "Git Repository": 20,
+    }
+
+    score = 0
+    recommendations = []
+
+    for item, detected in health_items.items():
+        if detected:
+            score += weights.get(item, 0)
+            continue
+
+        if item == "README":
+            recommendations.append("Add a README with setup and usage instructions.")
+        elif item == ".gitignore":
+            recommendations.append("Add a .gitignore file.")
+        elif item == "Tests":
+            recommendations.append("Add automated tests.")
+        elif item == "Environment Template":
+            recommendations.append("Add a .env.example file for required environment variables.")
+        elif item == "Docker":
+            recommendations.append("Consider adding Docker support if deployment needs it.")
+        elif item == "Git Repository":
+            recommendations.append("Initialize a Git repository.")
+
+    return score, recommendations
+
+def build_score_bar(score: int, width: int = 20) -> str:
+    """Create a simple Rich-compatible project health bar."""
+
+    filled = round((score / 100) * width)
+    empty = width - filled
+
+    return f"[green]{'█' * filled}[/green][dim]{'░' * empty}[/dim]"
+
 @project_app.command("info")
 def project_info():
     """Display information about the current project."""
@@ -374,3 +417,46 @@ def project_stats():
         extension_table.add_row(extension, str(count))
 
     console.print(extension_table)
+
+@project_app.command("health")
+def project_health():
+    """Analyze basic project health and best-practice indicators."""
+
+    project_path = Path.cwd()
+
+    health_items = detect_project_health_items(project_path)
+    score, recommendations = calculate_health_score(health_items)
+
+    console.print(
+        f"\n[bold cyan]Project Health — {project_path.name}[/bold cyan]\n"
+    )
+
+    console.print(
+        f"{build_score_bar(score)} [bold]{score}/100[/bold]\n"
+    )
+
+    table = Table(
+        title="Health Checks",
+        show_header=True,
+    )
+
+    table.add_column("Check", style="bold")
+    table.add_column("Status", justify="center")
+
+    for item, detected in health_items.items():
+        status = "[green]✓ Pass[/green]" if detected else "[yellow]⚠ Missing[/yellow]"
+        table.add_row(item, status)
+
+    console.print(table)
+
+    if recommendations:
+        console.print("\n[bold yellow]Recommendations[/bold yellow]")
+
+        for recommendation in recommendations:
+            console.print(f"  • {recommendation}")
+
+    else:
+        console.print(
+            "\n[bold green]✓ No major project health issues detected.[/bold green]"
+        )
+    

@@ -1,5 +1,6 @@
 import typer
 from rich.console import Console
+from devkit.commands.project import project_app
 
 app = typer.Typer(
     name="devkit",
@@ -9,6 +10,10 @@ app = typer.Typer(
 
 console = Console()
 
+app.add_typer(
+    project_app,
+    name="project",
+)
 
 @app.command()
 def hello():

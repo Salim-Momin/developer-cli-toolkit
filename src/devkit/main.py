@@ -1,11 +1,12 @@
 import typer
 from rich.console import Console
 from devkit.commands.project import project_app
+from devkit.ui import run_interactive_menu
 
 app = typer.Typer(
     name="devkit",
     help="Developer CLI Toolkit — useful tools for developers.",
-    no_args_is_help=True,
+    invoke_without_command=True,
 )
 
 console = Console()
@@ -14,6 +15,13 @@ app.add_typer(
     project_app,
     name="project",
 )
+
+@app.callback()
+def main(ctx: typer.Context):
+    """Developer CLI Toolkit."""
+
+    if ctx.invoked_subcommand is None:
+        run_interactive_menu()
 
 @app.command()
 def hello():

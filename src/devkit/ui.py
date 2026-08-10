@@ -2,6 +2,7 @@ import typer
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
+from devkit.commands.search import search_text
 
 from devkit.commands.project import (
     project_info,
@@ -45,7 +46,7 @@ def show_menu() -> None:
     table.add_row("3", "❤️  Project Health")
     table.add_row("4", "🌳 Project Tree")
 
-    table.add_row("5", "[dim]🔎 Smart Search — Coming Soon[/dim]")
+    table.add_row("5", "🔎 Smart Search")
     table.add_row("6", "[dim]🩺 Environment Doctor — Coming Soon[/dim]")
     table.add_row("7", "[dim]🌿 Git Tools — Coming Soon[/dim]")
     table.add_row("8", "[dim]🌐 API Tester — Coming Soon[/dim]")
@@ -88,7 +89,23 @@ def run_interactive_menu() -> None:
                 extension=None,
             )
 
-        elif choice in {"5", "6", "7", "8", "9"}:
+        elif choice == "5":
+            query = typer.prompt("Search text")
+
+            extension = typer.prompt(
+                "File extension filter (optional)",
+                default="",
+                show_default=False,
+            )
+
+            search_text(
+                query=query,
+                extension=extension or None,
+                case_sensitive=False,
+                limit=50,
+            )
+
+        elif choice in {"6", "7", "8", "9"}:
             console.print(
                 "[yellow]⚠ This feature is coming in a future milestone.[/yellow]"
             )

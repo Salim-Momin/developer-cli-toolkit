@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from collections import Counter
+from rich.tree import Tree
 
 import typer
 from rich.console import Console
@@ -144,11 +145,20 @@ IGNORED_DIRECTORIES = {
     ".git",
     ".venv",
     "venv",
-    "node_modules",
+    "env",
     "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    "node_modules",
     ".next",
+    ".nuxt",
+    ".cache",
+    "coverage",
+    "htmlcov",
     "dist",
     "build",
+    "target",
 }
 
 def count_project_items(path: Path) -> tuple[int, int]:
@@ -344,6 +354,49 @@ def build_score_bar(score: int, width: int = 20) -> str:
 
     return f"[green]{'█' * filled}[/green][dim]{'░' * empty}[/dim]"
 
+def build_project_tree(
+    path: Path,
+    tree: Tree,
+    current_depth: int = 0,
+    max_depth: int = 3,
+    show_files: bool = True,
+) -> None:
+    """Recursively build a Rich project tree."""
+
+    if current_depth >= max_depth:
+        return
+
+    try:
+        items = sorted(
+            path.iterdir(),
+            key=lambda item: (
+                item.is_file(),
+                item.name.lower(),
+            ),
+        )
+    except PermissionError:
+        return
+
+    for item in items:
+        if item.name in IGNORED_DIRECTORIES:
+            continue
+
+        if item.is_dir():
+            branch = tree.add(
+                f"[bold cyan]📁 {item.name}[/bold cyan]"
+            )
+
+            build_project_tree(
+                item,
+                branch,
+                current_depth + 1,
+                max_depth,
+                show_files,
+            )
+
+        elif show_files:
+            tree.add(f"📄 {item.name}")
+
 @project_app.command("info")
 def project_info():
     """Display information about the current project."""
@@ -459,4 +512,38 @@ def project_health():
         console.print(
             "\n[bold green]✓ No major project health issues detected.[/bold green]"
         )
+
+@project_app.command("tree")
+def project_tree(
+    depth: int = typer.Option(
+        3,
+        "--depth",
+        "-d",
+        help="Maximum tree depth.",
+        min=1,
+        max=10,
+    ),
+    files: bool = typer.Option(
+        True,
+        "--files/--no-files",
+        help="Show or hide files.",
+    ),
+):
+    """Display a clean project directory tree."""
+
+    project_path = Path.cwd()
+
+    root = Tree(
+        f"[bold green]📦 {project_path.name}[/bold green]"
+    )
+
+    build_project_tree(
+        path=project_path,
+        tree=root,
+        max_depth=depth,
+        show_files=files,
+    )
+
+    console.print()
+    console.print(root)
     

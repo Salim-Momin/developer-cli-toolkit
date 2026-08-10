@@ -1,4 +1,5 @@
 from pathlib import Path
+from collections import Counter
 
 import typer
 from rich.console import Console
@@ -90,6 +91,62 @@ def count_project_items(path: Path) -> tuple[int, int]:
 
     return file_count, directory_count
 
+def get_file_extension_stats(path: Path) -> Counter:
+    """Count file extensions in the project."""
+
+    extensions = Counter()
+
+    for item in path.rglob("*"):
+        if any(part in IGNORED_DIRECTORIES for part in item.parts):
+            continue
+
+        if item.is_file():
+            extension = item.suffix.lower()
+
+            if extension:
+                extensions[extension] += 1
+            else:
+                extensions["[no extension]"] += 1
+
+    return extensions
+
+LANGUAGE_MAP = {
+    ".py": "Python",
+    ".js": "JavaScript",
+    ".jsx": "JavaScript",
+    ".ts": "TypeScript",
+    ".tsx": "TypeScript",
+    ".html": "HTML",
+    ".css": "CSS",
+    ".scss": "SCSS",
+    ".java": "Java",
+    ".cpp": "C++",
+    ".c": "C",
+    ".cs": "C#",
+    ".go": "Go",
+    ".rs": "Rust",
+    ".php": "PHP",
+    ".rb": "Ruby",
+    ".sql": "SQL",
+    ".json": "JSON",
+    ".yaml": "YAML",
+    ".yml": "YAML",
+    ".md": "Markdown",
+}
+
+def get_language_stats(extension_stats: Counter) -> Counter:
+    """Convert extension statistics into language statistics."""
+
+    languages = Counter()
+
+    for extension, count in extension_stats.items():
+        language = LANGUAGE_MAP.get(extension)
+
+        if language:
+            languages[language] += count
+
+    return languages
+
 @project_app.command("info")
 def project_info():
     """Display information about the current project."""
@@ -120,3 +177,37 @@ def project_info():
         table.add_row(technology, status)
 
     console.print(table)
+
+
+@project_app.command("stats")
+def project_stats():
+    """Display project file and language statistics."""
+
+    project_path = Path.cwd()
+
+    extension_stats = get_file_extension_stats(project_path)
+    language_stats = get_language_stats(extension_stats)
+
+    console.print(
+        f"\n[bold]Project:[/bold] {project_path.name}\n"
+    )
+
+    language_table = Table(title="Language Statistics")
+
+    language_table.add_column("Language", style="bold cyan")
+    language_table.add_column("Files", justify="right")
+
+    for language, count in language_stats.most_common():
+        language_table.add_row(language, str(count))
+
+    console.print(language_table)
+
+    extension_table = Table(title="Top File Extensions")
+
+    extension_table.add_column("Extension", style="bold magenta")
+    extension_table.add_column("Files", justify="right")
+
+    for extension, count in extension_stats.most_common(10):
+        extension_table.add_row(extension, str(count))
+
+    console.print(extension_table)

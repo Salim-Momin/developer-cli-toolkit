@@ -13,37 +13,114 @@ project_app = typer.Typer(
 console = Console()
 
 def detect_project_type(path: Path) -> str:
-    """Detect the type of development project."""
+    """Detect the primary project framework or runtime."""
 
-    if (path / "next.config.js").exists():
+    # Next.js
+    if (
+        (path / "next.config.js").exists()
+        or (path / "next.config.mjs").exists()
+        or (path / "next.config.ts").exists()
+    ):
         return "Next.js"
 
-    if (path / "next.config.mjs").exists():
-        return "Next.js"
+    # Vite / React
+    if (
+        (path / "vite.config.js").exists()
+        or (path / "vite.config.ts").exists()
+    ):
+        package_json = path / "package.json"
 
-    if (path / "next.config.ts").exists():
-        return "Next.js"
+        if package_json.exists():
+            content = package_json.read_text(
+                encoding="utf-8",
+                errors="ignore",
+            ).lower()
 
-    if (path / "vite.config.js").exists():
+            if "react" in content:
+                return "React + Vite"
+
         return "Vite"
 
-    if (path / "vite.config.ts").exists():
-        return "Vite"
-
+    # Django
     if (path / "manage.py").exists():
         return "Django"
 
-    if (path / "pyproject.toml").exists():
+    # Python dependency/config detection
+    dependency_files = [
+        path / "requirements.txt",
+        path / "pyproject.toml",
+    ]
+
+    python_content = ""
+
+    for file in dependency_files:
+        if file.exists():
+            python_content += file.read_text(
+                encoding="utf-8",
+                errors="ignore",
+            ).lower()
+
+    if "fastapi" in python_content:
+        return "FastAPI"
+
+    if "flask" in python_content:
+        return "Flask"
+
+    if "django" in python_content:
+        return "Django"
+
+    # Generic Python
+    if (
+        (path / "pyproject.toml").exists()
+        or (path / "requirements.txt").exists()
+    ):
         return "Python"
 
-    if (path / "requirements.txt").exists():
-        return "Python"
-
+    # Generic Node.js
     if (path / "package.json").exists():
+        package_content = (path / "package.json").read_text(
+            encoding="utf-8",
+            errors="ignore",
+        ).lower()
+
+        if "react" in package_content:
+            return "React"
+
         return "Node.js"
 
     return "Unknown"
 
+def detect_project_files(path: Path) -> list[str]:
+    """Detect important configuration and dependency files."""
+
+    important_files = [
+        "pyproject.toml",
+        "requirements.txt",
+        "package.json",
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock",
+        "Dockerfile",
+        "docker-compose.yml",
+        "compose.yml",
+        ".env",
+        ".env.example",
+        "README.md",
+        "manage.py",
+        "next.config.js",
+        "next.config.mjs",
+        "next.config.ts",
+        "vite.config.js",
+        "vite.config.ts",
+    ]
+
+    detected = []
+
+    for filename in important_files:
+        if (path / filename).exists():
+            detected.append(filename)
+
+    return detected
 
 def detect_technologies(path: Path) -> dict[str, bool]:
     """Detect common technologies used by the project."""
@@ -155,6 +232,7 @@ def project_info():
 
     project_type = detect_project_type(project_path)
     technologies = detect_technologies(project_path)
+    project_files = detect_project_files(project_path)
 
     file_count, directory_count = count_project_items(project_path)
 

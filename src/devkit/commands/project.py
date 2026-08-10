@@ -360,11 +360,16 @@ def build_project_tree(
     current_depth: int = 0,
     max_depth: int = 3,
     show_files: bool = True,
-) -> None:
+    show_hidden: bool = False,
+    extension_filter: str | None = None,
+) -> tuple[int, int]:
     """Recursively build a Rich project tree."""
 
     if current_depth >= max_depth:
-        return
+        return 0, 0
+
+    file_count = 0
+    directory_count = 0
 
     try:
         items = sorted(
@@ -374,28 +379,50 @@ def build_project_tree(
                 item.name.lower(),
             ),
         )
-    except PermissionError:
-        return
+    except (PermissionError, OSError):
+        return 0, 0
 
     for item in items:
         if item.name in IGNORED_DIRECTORIES:
             continue
 
+        if not show_hidden and item.name.startswith("."):
+            continue
+
         if item.is_dir():
+            directory_count += 1
+
             branch = tree.add(
                 f"[bold cyan]📁 {item.name}[/bold cyan]"
             )
 
-            build_project_tree(
-                item,
-                branch,
-                current_depth + 1,
-                max_depth,
-                show_files,
+            child_files, child_dirs = build_project_tree(
+                path=item,
+                tree=branch,
+                current_depth=current_depth + 1,
+                max_depth=max_depth,
+                show_files=show_files,
+                show_hidden=show_hidden,
+                extension_filter=extension_filter,
             )
 
+            file_count += child_files
+            directory_count += child_dirs
+
         elif show_files:
+            if extension_filter:
+                normalized_extension = extension_filter.lower()
+
+                if not normalized_extension.startswith("."):
+                    normalized_extension = f".{normalized_extension}"
+
+                if item.suffix.lower() != normalized_extension:
+                    continue
+
+            file_count += 1
             tree.add(f"📄 {item.name}")
+
+    return file_count, directory_count
 
 @project_app.command("info")
 def project_info():
@@ -528,6 +555,17 @@ def project_tree(
         "--files/--no-files",
         help="Show or hide files.",
     ),
+    hidden: bool = typer.Option(
+        False,
+        "--hidden",
+        help="Include hidden files and folders.",
+    ),
+    extension: str | None = typer.Option(
+        None,
+        "--ext",
+        "-e",
+        help="Show only files with a specific extension.",
+    ),
 ):
     """Display a clean project directory tree."""
 
@@ -537,13 +575,20 @@ def project_tree(
         f"[bold green]📦 {project_path.name}[/bold green]"
     )
 
-    build_project_tree(
+    file_count, directory_count = build_project_tree(
         path=project_path,
         tree=root,
         max_depth=depth,
         show_files=files,
+        show_hidden=hidden,
+        extension_filter=extension,
     )
 
     console.print()
     console.print(root)
-    
+
+    console.print(
+        f"\n[dim]Summary:[/dim] "
+        f"[bold]{directory_count}[/bold] directories, "
+        f"[bold]{file_count}[/bold] files"
+    )

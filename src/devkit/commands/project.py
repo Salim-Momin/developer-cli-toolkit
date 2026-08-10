@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from collections import Counter
 
@@ -224,6 +225,82 @@ def get_language_stats(extension_stats: Counter) -> Counter:
 
     return languages
 
+def get_project_size(path: Path) -> int:
+    """Return total project size in bytes, ignoring generated directories."""
+
+    total_size = 0
+
+    for item in path.rglob("*"):
+        if any(part in IGNORED_DIRECTORIES for part in item.parts):
+            continue
+
+        if item.is_file():
+            try:
+                total_size += item.stat().st_size
+            except OSError:
+                pass
+
+    return total_size
+
+def format_size(size_bytes: int) -> str:
+    """Convert bytes into a human-readable size."""
+
+    units = ["B", "KB", "MB", "GB"]
+
+    size = float(size_bytes)
+
+    for unit in units:
+        if size < 1024:
+            return f"{size:.2f} {unit}"
+
+        size /= 1024
+
+    return f"{size:.2f} TB"
+
+def get_primary_language(path: Path) -> str:
+    """Return the most common programming language in the project."""
+
+    extension_stats = get_file_extension_stats(path)
+    language_stats = get_language_stats(extension_stats)
+
+    if not language_stats:
+        return "Unknown"
+
+    return language_stats.most_common(1)[0][0]
+
+def detect_project_health_items(path: Path) -> dict[str, bool]:
+    """Detect common project quality indicators."""
+
+    test_directories = [
+        "tests",
+        "test",
+        "__tests__",
+    ]
+
+    has_tests = any(
+        (path / directory).exists()
+        for directory in test_directories
+    )
+
+    return {
+        "README": (
+            (path / "README.md").exists()
+            or (path / "README.rst").exists()
+        ),
+        ".gitignore": (path / ".gitignore").exists(),
+        "Tests": has_tests,
+        "Environment Template": (
+            (path / ".env.example").exists()
+            or (path / ".env.sample").exists()
+        ),
+        "Docker": (
+            (path / "Dockerfile").exists()
+            or (path / "docker-compose.yml").exists()
+            or (path / "compose.yml").exists()
+        ),
+        "Git Repository": (path / ".git").exists(),
+    }
+
 @project_app.command("info")
 def project_info():
     """Display information about the current project."""
@@ -233,6 +310,9 @@ def project_info():
     project_type = detect_project_type(project_path)
     technologies = detect_technologies(project_path)
     project_files = detect_project_files(project_path)
+    project_size = get_project_size(project_path)
+    primary_language = get_primary_language(project_path)
+    health_items = detect_project_health_items(project_path)
 
     file_count, directory_count = count_project_items(project_path)
 
@@ -247,6 +327,8 @@ def project_info():
     table.add_row("Name", project_path.name)
     table.add_row("Path", str(project_path))
     table.add_row("Type", project_type)
+    table.add_row("Primary Language", primary_language)
+    table.add_row("Project Size", format_size(project_size))
     table.add_row("Files", str(file_count))
     table.add_row("Directories", str(directory_count))
 
@@ -254,8 +336,11 @@ def project_info():
         status = "[green]Yes[/green]" if detected else "[red]No[/red]"
         table.add_row(technology, status)
 
-    console.print(table)
+    for item, detected in health_items.items():
+        status = "[green]Yes[/green]" if detected else "[yellow]No[/yellow]"
+        table.add_row(item, status)
 
+    console.print(table)
 
 @project_app.command("stats")
 def project_stats():

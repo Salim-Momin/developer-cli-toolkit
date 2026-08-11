@@ -1,6 +1,7 @@
 import shutil
 import subprocess
-
+import os
+import sys
 import typer
 from rich.console import Console
 from rich.table import Table
@@ -180,6 +181,13 @@ def doctor():
     ):
         results = inspect_tools()
 
+    diagnostics = build_diagnostics(results)
+
+    recommendations = build_recommendations(
+        results,
+        diagnostics,
+    )
+
     score = calculate_environment_score(results)
 
     console.print(
@@ -221,24 +229,253 @@ def doctor():
 
     console.print(table)
 
+    diagnostic_table = Table(
+        title="Environment Diagnostics"
+    )
+
+    diagnostic_table.add_column(
+        "Check",
+        style="bold",
+    )
+
+    diagnostic_table.add_column(
+        "Status",
+        justify="center",
+    )
+
+    diagnostic_table.add_column(
+        "Details",
+        style="cyan",
+    )
+
+    for diagnostic in diagnostics:
+        status = (
+            "[green]✓ Healthy[/green]"
+            if diagnostic["ok"]
+            else "[yellow]⚠ Attention[/yellow]"
+        )
+
+        diagnostic_table.add_row(
+            diagnostic["check"],
+            status,
+            diagnostic["details"],
+        )
+
+    console.print()
+    console.print(diagnostic_table)
+
     missing = [
         result["name"]
         for result in results
         if not result["installed"]
     ]
 
-    if missing:
+    if recommendations:
         console.print(
-            "\n[bold yellow]Missing tools[/bold yellow]"
+            "\n[bold yellow]Recommendations[/bold yellow]"
         )
 
-        for tool in missing:
+        for recommendation in recommendations:
             console.print(
-                f"  • {tool}"
+                f"  • {recommendation}"
             )
+
     else:
         console.print(
             "\n[bold green]"
-            "✓ All checked development tools are available."
+            "✓ Development environment looks healthy."
             "[/bold green]"
-        )    
+        )   
+
+def detect_virtual_environment() -> dict:
+    """Detect whether Python is running inside a virtual environment."""
+
+    active = sys.prefix != sys.base_prefix
+
+    return {
+        "active": active,
+        "path": sys.prefix if active else "-",
+    }        
+
+def get_git_config() -> dict:
+    """Read basic Git user configuration."""
+
+    username = run_command(
+        ["git", "config", "--global", "user.name"]
+    )
+
+    email = run_command(
+        ["git", "config", "--global", "user.email"]
+    )
+
+    return {
+        "username": first_line(username) if username else "-",
+        "email": first_line(email) if email else "-",
+    }
+
+def detect_package_managers() -> list[str]:
+    """Detect installed Node.js package managers."""
+
+    managers = [
+        "npm",
+        "pnpm",
+        "yarn",
+        "bun",
+    ]
+
+    installed = []
+
+    for manager in managers:
+        if shutil.which(manager):
+            installed.append(manager)
+
+    return installed
+
+def check_docker_daemon() -> bool:
+    """Check whether Docker daemon is reachable."""
+
+    if not shutil.which("docker"):
+        return False
+
+    result = run_command(
+        ["docker", "info"]
+    )
+
+    return result is not None
+
+def build_diagnostics(
+    tool_results: list[dict],
+) -> list[dict]:
+    """Build additional development environment diagnostics."""
+
+    diagnostics = []
+
+    virtual_env = detect_virtual_environment()
+
+    diagnostics.append(
+        {
+            "check": "Python Virtual Environment",
+            "ok": virtual_env["active"],
+            "details": (
+                virtual_env["path"]
+                if virtual_env["active"]
+                else "No virtual environment detected"
+            ),
+        }
+    )
+
+    git_installed = any(
+        result["name"] == "Git" and result["installed"]
+        for result in tool_results
+    )
+
+    if git_installed:
+        git_config = get_git_config()
+
+        git_configured = (
+            git_config["username"] != "-"
+            and git_config["email"] != "-"
+        )
+
+        diagnostics.append(
+            {
+                "check": "Git Identity",
+                "ok": git_configured,
+                "details": (
+                    f'{git_config["username"]} <{git_config["email"]}>'
+                    if git_configured
+                    else "Git username or email is missing"
+                ),
+            }
+        )
+
+    package_managers = detect_package_managers()
+
+    diagnostics.append(
+        {
+            "check": "Node Package Manager",
+            "ok": bool(package_managers),
+            "details": (
+                ", ".join(package_managers)
+                if package_managers
+                else "No Node package manager detected"
+            ),
+        }
+    )
+
+    docker_installed = any(
+        result["name"] == "Docker" and result["installed"]
+        for result in tool_results
+    )
+
+    if docker_installed:
+        daemon_running = check_docker_daemon()
+
+        diagnostics.append(
+            {
+                "check": "Docker Daemon",
+                "ok": daemon_running,
+                "details": (
+                    "Running"
+                    if daemon_running
+                    else "Docker installed but daemon unavailable"
+                ),
+            }
+        )
+
+    python_path = shutil.which("python") or sys.executable
+
+    diagnostics.append(
+        {
+            "check": "Python Executable",
+            "ok": bool(python_path),
+            "details": python_path or "Python executable not found",
+        }
+    )
+
+    return diagnostics
+
+def build_recommendations(
+    tool_results: list[dict],
+    diagnostics: list[dict],
+) -> list[str]:
+    """Build actionable environment recommendations."""
+
+    recommendations = []
+
+    missing_tools = [
+        result["name"]
+        for result in tool_results
+        if not result["installed"]
+    ]
+
+    for tool in missing_tools:
+        recommendations.append(
+            f"{tool} is not available on PATH."
+        )
+
+    for diagnostic in diagnostics:
+        if diagnostic["ok"]:
+            continue
+
+        if diagnostic["check"] == "Python Virtual Environment":
+            recommendations.append(
+                "Use a Python virtual environment for project isolation."
+            )
+
+        elif diagnostic["check"] == "Git Identity":
+            recommendations.append(
+                "Configure Git user.name and user.email before committing."
+            )
+
+        elif diagnostic["check"] == "Node Package Manager":
+            recommendations.append(
+                "Install npm, pnpm, yarn, or bun for Node.js projects."
+            )
+
+        elif diagnostic["check"] == "Docker Daemon":
+            recommendations.append(
+                "Start Docker Desktop or the Docker daemon."
+            )
+
+    return recommendations

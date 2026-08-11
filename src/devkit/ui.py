@@ -23,51 +23,97 @@ from devkit.commands.git import (
     git_sync,
 )
 
-console = Console()
+from devkit.terminal.components import (
+    build_menu_table,
+    section_title,
+    show_banner,
+)
+from devkit.terminal.theme import console
 
+def show_menu() -> None:
+    """Display the main DevKit command menu."""
 
-def show_banner() -> None:
-    """Display the DevKit banner."""
+    console.print(
+        "[devkit.secondary]PROJECT[/devkit.secondary]"
+    )
+
+    project_table = build_menu_table()
+
+    project_table.add_row(
+        "1",
+        "Project Information",
+    )
+
+    project_table.add_row(
+        "2",
+        "Project Statistics",
+    )
+
+    project_table.add_row(
+        "3",
+        "Project Health",
+    )
+
+    project_table.add_row(
+        "4",
+        "Project Tree",
+    )
+
+    console.print(project_table)
+
+    console.print()
+    console.print(
+        "[devkit.secondary]DEVELOPER TOOLS[/devkit.secondary]"
+    )
+
+    tools_table = build_menu_table()
+
+    tools_table.add_row(
+        "5",
+        "Smart Search",
+    )
+
+    tools_table.add_row(
+        "6",
+        "Environment Doctor",
+    )
+
+    tools_table.add_row(
+        "7",
+        "Git Toolkit",
+    )
+
+    console.print(tools_table)
+
+    console.print()
+    console.print(
+        "[devkit.secondary]COMING SOON[/devkit.secondary]"
+    )
+
+    future_table = build_menu_table()
+
+    future_table.add_row(
+        "8",
+        "[dim]API Tester[/dim]",
+    )
+
+    future_table.add_row(
+        "9",
+        "[dim]AI Assistant[/dim]",
+    )
+
+    console.print(future_table)
 
     console.print()
 
-    console.print(
-        Panel.fit(
-            "[bold cyan]⚡ DEVKIT[/bold cyan]\n"
-            "[dim]Developer Command Center[/dim]",
-            border_style="cyan",
-            padding=(1, 6),
-        )
+    exit_table = build_menu_table()
+
+    exit_table.add_row(
+        "0",
+        "Exit",
     )
 
-
-def show_menu() -> None:
-    """Display available DevKit tools."""
-
-    table = Table(
-        show_header=False,
-        box=None,
-        padding=(0, 2),
-    )
-
-    table.add_column("Number", style="bold cyan")
-    table.add_column("Tool")
-
-    table.add_row("1", "🔍 Project Information")
-    table.add_row("2", "📊 Project Statistics")
-    table.add_row("3", "❤️  Project Health")
-    table.add_row("4", "🌳 Project Tree")
-
-    table.add_row("5", "🔎 Smart Search")
-    table.add_row("6", "🩺 Environment Doctor")
-    table.add_row("7", "🌿 Git Tools")
-    table.add_row("8", "[dim]🌐 API Tester — Coming Soon[/dim]")
-    table.add_row("9", "[dim]🤖 AI Assistant — Coming Soon[/dim]")
-
-    table.add_row("0", "❌ Exit")
-
-    console.print(table)
-
+    console.print(exit_table)
 
 def run_interactive_menu() -> None:
     """Run the interactive DevKit command center."""
@@ -80,7 +126,9 @@ def run_interactive_menu() -> None:
 
         console.print()
 
-        choice = typer.prompt("Select an option")
+        choice = typer.prompt(
+            "\nChoose a command"
+        )
 
         console.print()
 
@@ -138,22 +186,29 @@ def run_interactive_menu() -> None:
             doctor()
 
         elif choice == "7":
-            console.print(
-                "\n[bold cyan]🌿 Git Tools[/bold cyan]\n"
+            console.clear()
+
+            section_title(
+                "🌿 Git Toolkit",
+                "Inspect repository state, history and synchronization.",
             )
 
-            console.print("1  Status")
-            console.print("2  Changed Files")
-            console.print("3  Branches")
-            console.print("4  Recent Commits")
-            console.print("5  Repository Summary")
-            console.print("6  Remote Information")
-            console.print("7  Sync Status")
-            console.print("8  Git Health")
-            console.print("0  Back")
+            git_table = build_menu_table()
+
+            git_table.add_row("1", "Repository Status")
+            git_table.add_row("2", "Changed Files")
+            git_table.add_row("3", "Local Branches")
+            git_table.add_row("4", "Recent Commits")
+            git_table.add_row("5", "Repository Summary")
+            git_table.add_row("6", "Remote Information")
+            git_table.add_row("7", "Sync Status")
+            git_table.add_row("8", "Git Health")
+            git_table.add_row("0", "Back")
+
+            console.print(git_table)
 
             git_choice = typer.prompt(
-                "\nSelect Git option"
+                "\nChoose Git command"
             )
 
             if git_choice == "1":
@@ -185,9 +240,8 @@ def run_interactive_menu() -> None:
 
             else:
                 console.print(
-                    "[red]✗ Invalid Git option.[/red]"
+                    "[devkit.error]✗ Invalid Git option.[/devkit.error]"
                 )
-
         elif choice in {"8", "9"}:
             console.print(
                 "[yellow]⚠ This feature is coming in a future milestone.[/yellow]"
@@ -195,13 +249,17 @@ def run_interactive_menu() -> None:
 
         elif choice == "0":
             console.print(
-                "\n[bold green]Goodbye from DevKit! 👋[/bold green]\n"
+                "\n[devkit.success]"
+                "✓ DevKit session closed."
+                "[/devkit.success]\n"
             )
             break
 
         else:
             console.print(
-                "[red]✗ Invalid option. Choose a number from the menu.[/red]"
+                "[devkit.error]"
+                "✗ Invalid option. Choose one of the listed commands."
+                "[/devkit.error]"
             )
 
         console.print()

@@ -2,14 +2,18 @@ import subprocess
 from pathlib import Path
 
 import typer
-from rich.console import Console
 from rich.table import Table
+from devkit.terminal.components import (
+    error,
+    section_title,
+    success,
+    warning,
+)
+from devkit.terminal.theme import console
 
 git_app = typer.Typer(
     help="Inspect and work with Git repositories."
 )
-
-console = Console()
 
 def run_git_command(
     args: list[str],
@@ -55,12 +59,16 @@ def require_git_repository() -> Path:
     path = Path.cwd()
 
     if not is_git_repository(path):
-        console.print(
-            "\n[bold red]✗ Not a Git repository.[/bold red]"
+        error(
+            "This directory is not inside a Git repository."
         )
+
         console.print(
-            "[dim]Run this command inside a Git project.[/dim]"
+            "[devkit.secondary]"
+            "Run this command from inside a Git project."
+            "[/devkit.secondary]"
         )
+
         raise typer.Exit(code=1)
 
     return path    
@@ -247,8 +255,9 @@ def git_status():
         if "D" in status:
             deleted += 1
 
-    console.print(
-        f"\n[bold cyan]Git Status — {path.name}[/bold cyan]\n"
+    section_title(
+        "🌿 Git Status",
+        path.name,
     )
 
     table = Table(show_header=False)
@@ -265,8 +274,9 @@ def git_status():
     console.print(table)
 
     if not lines:
-        console.print(
-            "\n[bold green]✓ Working tree is clean.[/bold green]"
+        console.print()
+        success(
+            "Working tree is clean."
         )
 
 @git_app.command("branches")

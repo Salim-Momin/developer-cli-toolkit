@@ -3,10 +3,14 @@ import subprocess
 import os
 import sys
 import typer
-from rich.console import Console
 from rich.table import Table
 
-console = Console()
+from devkit.terminal.components import (
+    section_title,
+    success,
+    warning,
+)
+from devkit.terminal.theme import console
 
 def run_command(command: list[str]) -> str | None:
     """Run a command safely and return its output."""
@@ -172,8 +176,9 @@ def build_environment_bar(
 def doctor():
     """Inspect the local development environment."""
 
-    console.print(
-        "\n[bold cyan]🩺 DevKit Environment Doctor[/bold cyan]\n"
+    section_title(
+        "🩺 Environment Doctor",
+        "Inspect the local developer environment.",
     )
 
     with console.status(
@@ -281,11 +286,10 @@ def doctor():
             )
 
     else:
-        console.print(
-            "\n[bold green]"
-            "✓ Development environment looks healthy."
-            "[/bold green]"
-        )   
+        console.print()
+        success(
+            "Development environment looks healthy."
+        )
 
 def detect_virtual_environment() -> dict:
     """Detect whether Python is running inside a virtual environment."""

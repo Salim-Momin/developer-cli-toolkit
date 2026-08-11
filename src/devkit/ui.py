@@ -90,7 +90,12 @@ def run_interactive_menu() -> None:
             )
 
         elif choice == "5":
-            query = typer.prompt("Search text")
+            query = typer.prompt("Search query")
+
+            mode = typer.prompt(
+                "Search mode: text or filename",
+                default="text",
+            ).lower()
 
             extension = typer.prompt(
                 "File extension filter (optional)",
@@ -98,10 +103,22 @@ def run_interactive_menu() -> None:
                 show_default=False,
             )
 
+            use_regex = False
+
+            if mode == "text":
+                regex_choice = typer.prompt(
+                    "Use regex? y/n",
+                    default="n",
+                ).lower()
+
+                use_regex = regex_choice == "y"
+
             search_text(
                 query=query,
                 extension=extension or None,
                 case_sensitive=False,
+                regex=use_regex,
+                filename=mode == "filename",
                 limit=50,
             )
 

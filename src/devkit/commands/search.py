@@ -1,8 +1,10 @@
 from pathlib import Path
 
 import typer
+import re
 from rich.console import Console
 from rich.table import Table
+from rich.markup import escape
 
 search_app = typer.Typer(
     help="Search files and source code inside the current project."
@@ -56,14 +58,23 @@ def search_project(
     query: str,
     extension: str | None = None,
     case_sensitive: bool = False,
+    regex: bool = False,
 ) -> list[dict]:
-    """Search text inside files in the current project."""
+    """Search text inside project files."""
 
     results = []
 
     extension = normalize_extension(extension)
 
-    search_query = query if case_sensitive else query.lower()
+    flags = 0 if case_sensitive else re.IGNORECASE
+
+    pattern = None
+
+    if regex:
+        try:
+            pattern = re.compile(query, flags)
+        except re.error as error:
+            raise ValueError(f"Invalid regular expression: {error}") from error
 
     for file_path in root.rglob("*"):
         if should_ignore(file_path):
@@ -73,6 +84,9 @@ def search_project(
             continue
 
         if extension and file_path.suffix.lower() != extension:
+            continue
+
+        if is_binary_file(file_path):
             continue
 
         try:
@@ -87,9 +101,23 @@ def search_project(
             content.splitlines(),
             start=1,
         ):
-            searchable_line = line if case_sensitive else line.lower()
+            matched = False
 
-            if search_query in searchable_line:
+            if regex and pattern:
+                matched = bool(pattern.search(line))
+
+            else:
+                searchable_line = (
+                    line if case_sensitive else line.lower()
+                )
+
+                search_query = (
+                    query if case_sensitive else query.lower()
+                )
+
+                matched = search_query in searchable_line
+
+            if matched:
                 results.append(
                     {
                         "file": file_path,
@@ -99,6 +127,65 @@ def search_project(
                 )
 
     return results
+
+def is_binary_file(path: Path) -> bool:
+    """Detect whether a file appears to be binary."""
+
+    try:
+        with path.open("rb") as file:
+            chunk = file.read(1024)
+
+        return b"\x00" in chunk
+
+    except OSError:
+        return True
+
+def search_filenames(
+    root: Path,
+    query: str,
+    case_sensitive: bool = False,
+) -> list[Path]:
+    """Search for files by filename."""
+
+    results = []
+
+    search_query = query if case_sensitive else query.lower()
+
+    for path in root.rglob("*"):
+        if should_ignore(path):
+            continue
+
+        if not path.is_file():
+            continue
+
+        filename = path.name if case_sensitive else path.name.lower()
+
+        if search_query in filename:
+            results.append(path)
+
+    return results
+
+def highlight_match(
+    text: str,
+    query: str,
+    case_sensitive: bool = False,
+) -> str:
+    """Highlight matching text for Rich output."""
+
+    safe_text = escape(text)
+
+    flags = 0 if case_sensitive else re.IGNORECASE
+
+    try:
+        pattern = re.compile(re.escape(query), flags)
+
+        return pattern.sub(
+            lambda match: f"[bold yellow]{escape(match.group(0))}[/bold yellow]",
+            safe_text,
+        )
+
+    except re.error:
+        return safe_text
 
 @search_app.command("text")
 def search_text(
@@ -118,6 +205,18 @@ def search_text(
         "-c",
         help="Enable case-sensitive searching.",
     ),
+    regex: bool = typer.Option(
+        False,
+        "--regex",
+        "-r",
+        help="Treat the query as a regular expression.",
+    ),
+    filename: bool = typer.Option(
+        False,
+        "--filename",
+        "-f",
+        help="Search filenames instead of file contents.",
+    ),
     limit: int = typer.Option(
         50,
         "--limit",
@@ -127,20 +226,53 @@ def search_text(
         max=500,
     ),
 ):
-    """Search for text inside project files."""
+    """Search project files and source code."""
 
     project_path = Path.cwd()
 
-    console.print(
-        f'\n[bold cyan]Searching for:[/bold cyan] "{query}"'
-    )
+    if filename:
+        results = search_filenames(
+            root=project_path,
+            query=query,
+            case_sensitive=case_sensitive,
+        )
 
-    results = search_project(
-        root=project_path,
-        query=query,
-        extension=extension,
-        case_sensitive=case_sensitive,
-    )
+        if not results:
+            console.print(
+                "\n[yellow]No matching filenames found.[/yellow]"
+            )
+            return
+
+        table = Table(
+            title=f"Filename Results ({len(results)} matches)"
+        )
+
+        table.add_column("File", style="cyan")
+
+        for result in results[:limit]:
+            table.add_row(
+                str(result.relative_to(project_path))
+            )
+
+        console.print()
+        console.print(table)
+
+        return
+
+    try:
+        results = search_project(
+            root=project_path,
+            query=query,
+            extension=extension,
+            case_sensitive=case_sensitive,
+            regex=regex,
+        )
+
+    except ValueError as error:
+        console.print(
+            f"\n[bold red]Search error:[/bold red] {error}"
+        )
+        raise typer.Exit(code=1)
 
     if not results:
         console.print(
@@ -149,7 +281,7 @@ def search_text(
         return
 
     table = Table(
-        title=f"Search Results ({len(results)} matches)",
+        title=f"Search Results ({len(results)} matches)"
     )
 
     table.add_column("File", style="cyan")
@@ -161,8 +293,17 @@ def search_text(
 
         text = result["text"]
 
-        if len(text) > 100:
-            text = text[:97] + "..."
+        if len(text) > 120:
+            text = text[:117] + "..."
+
+        if not regex:
+            text = highlight_match(
+                text=text,
+                query=query,
+                case_sensitive=case_sensitive,
+            )
+        else:
+            text = escape(text)
 
         table.add_row(
             str(relative_path),
@@ -170,9 +311,11 @@ def search_text(
             text,
         )
 
+    console.print()
     console.print(table)
 
     if len(results) > limit:
         console.print(
-            f"\n[dim]Showing {limit} of {len(results)} matches.[/dim]"
+            f"\n[dim]Showing {limit} of "
+            f"{len(results)} matches.[/dim]"
         )

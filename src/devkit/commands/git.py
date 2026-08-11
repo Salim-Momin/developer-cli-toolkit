@@ -65,6 +65,145 @@ def require_git_repository() -> Path:
 
     return path    
 
+def get_tracking_branch(
+    path: Path,
+) -> str | None:
+    """Return the upstream tracking branch."""
+
+    return run_git_command(
+        [
+            "rev-parse",
+            "--abbrev-ref",
+            "--symbolic-full-name",
+            "@{upstream}",
+        ],
+        cwd=path,
+    )
+
+def get_ahead_behind(
+    path: Path,
+    upstream: str,
+) -> tuple[int, int]:
+    """Return ahead and behind counts against upstream."""
+
+    output = run_git_command(
+        [
+            "rev-list",
+            "--left-right",
+            "--count",
+            f"HEAD...{upstream}",
+        ],
+        cwd=path,
+    )
+
+    if not output:
+        return 0, 0
+
+    parts = output.split()
+
+    if len(parts) != 2:
+        return 0, 0
+
+    try:
+        ahead = int(parts[0])
+        behind = int(parts[1])
+    except ValueError:
+        return 0, 0
+
+    return ahead, behind
+
+def collect_git_health(
+    path: Path,
+) -> list[dict]:
+    """Collect repository health checks."""
+
+    checks = []
+
+    branch = run_git_command(
+        ["branch", "--show-current"],
+        cwd=path,
+    )
+
+    checks.append(
+        {
+            "name": "Current Branch",
+            "ok": bool(branch),
+            "details": branch or "Detached HEAD",
+        }
+    )
+
+    origin = run_git_command(
+        ["remote", "get-url", "origin"],
+        cwd=path,
+    )
+
+    checks.append(
+        {
+            "name": "Origin Remote",
+            "ok": bool(origin),
+            "details": origin or "Not configured",
+        }
+    )
+
+    upstream = get_tracking_branch(path)
+
+    checks.append(
+        {
+            "name": "Tracking Branch",
+            "ok": bool(upstream),
+            "details": upstream or "Not configured",
+        }
+    )
+
+    username = run_git_command(
+        ["config", "user.name"],
+        cwd=path,
+    ) or run_git_command(
+        ["config", "--global", "user.name"],
+        cwd=path,
+    )
+
+    email = run_git_command(
+        ["config", "user.email"],
+        cwd=path,
+    ) or run_git_command(
+        ["config", "--global", "user.email"],
+        cwd=path,
+    )
+
+    identity_ok = bool(username and email)
+
+    checks.append(
+        {
+            "name": "Git Identity",
+            "ok": identity_ok,
+            "details": (
+                f"{username} <{email}>"
+                if identity_ok
+                else "Name or email missing"
+            ),
+        }
+    )
+
+    status = run_git_command(
+        ["status", "--porcelain"],
+        cwd=path,
+    ) or ""
+
+    checks.append(
+        {
+            "name": "Working Tree",
+            "ok": not bool(status.strip()),
+            "details": (
+                "Clean"
+                if not status.strip()
+                else "Uncommitted changes detected"
+            ),
+        }
+    )
+
+    return checks
+
 @git_app.command("status")
 def git_status():
     """Show a clean summary of Git working-tree changes."""
@@ -344,3 +483,193 @@ def git_summary():
     )
 
     console.print(table)
+
+@git_app.command("changes")
+def git_changes():
+    """Show changed files in the working tree."""
+
+    path = require_git_repository()
+
+    output = run_git_command(
+        ["status", "--short"],
+        cwd=path,
+    ) or ""
+
+    if not output:
+        console.print(
+            "\n[bold green]✓ No changed files.[/bold green]"
+        )
+        return
+
+    table = Table(
+        title="Changed Files"
+    )
+
+    table.add_column("Status", style="yellow")
+    table.add_column("File", style="cyan")
+
+    for line in output.splitlines():
+        if len(line) < 3:
+            continue
+
+        status = line[:2].strip() or "-"
+        file_name = line[3:].strip()
+
+        table.add_row(
+            status,
+            file_name,
+        )
+
+    console.print()
+    console.print(table)    
+
+@git_app.command("remote")
+def git_remote():
+    """Display Git remote configuration."""
+
+    path = require_git_repository()
+
+    output = run_git_command(
+        ["remote", "-v"],
+        cwd=path,
+    )
+
+    if not output:
+        console.print(
+            "\n[yellow]No Git remotes configured.[/yellow]"
+        )
+        return
+
+    table = Table(
+        title="Git Remotes"
+    )
+
+    table.add_column("Name", style="cyan")
+    table.add_column("URL")
+    table.add_column("Type", style="dim")
+
+    for line in output.splitlines():
+        parts = line.split()
+
+        if len(parts) < 3:
+            continue
+
+        name = parts[0]
+        url = parts[1]
+        remote_type = parts[2].strip("()")
+
+        table.add_row(
+            name,
+            url,
+            remote_type,
+        )
+
+    console.print()
+    console.print(table)
+
+@git_app.command("sync")
+def git_sync():
+    """Show local branch synchronization status."""
+
+    path = require_git_repository()
+
+    branch = run_git_command(
+        ["branch", "--show-current"],
+        cwd=path,
+    ) or "Unknown"
+
+    upstream = get_tracking_branch(path)
+
+    console.print(
+        f"\n[bold cyan]Git Sync Status — {branch}[/bold cyan]\n"
+    )
+
+    if not upstream:
+        console.print(
+            "[yellow]⚠ No upstream tracking branch configured.[/yellow]"
+        )
+        return
+
+    ahead, behind = get_ahead_behind(
+        path,
+        upstream,
+    )
+
+    table = Table(show_header=False)
+
+    table.add_column("Property", style="bold")
+    table.add_column("Value")
+
+    table.add_row("Local Branch", branch)
+    table.add_row("Upstream", upstream)
+    table.add_row("Ahead", str(ahead))
+    table.add_row("Behind", str(behind))
+
+    console.print(table)
+
+    if ahead == 0 and behind == 0:
+        console.print(
+            "\n[bold green]✓ Branch is synchronized.[/bold green]"
+        )
+
+    elif ahead > 0 and behind == 0:
+        console.print(
+            f"\n[yellow]Local branch has {ahead} unpushed commit(s).[/yellow]"
+        )
+
+    elif behind > 0 and ahead == 0:
+        console.print(
+            f"\n[yellow]Local branch is behind by {behind} commit(s).[/yellow]"
+        )
+
+    else:
+        console.print(
+            "\n[yellow]Local and remote branches have diverged.[/yellow]"
+        )
+
+@git_app.command("health")
+def git_health():
+    """Check Git repository configuration and health."""
+
+    path = require_git_repository()
+
+    checks = collect_git_health(path)
+
+    score = round(
+        (
+            sum(1 for check in checks if check["ok"])
+            / len(checks)
+        )
+        * 100
+    )
+
+    console.print(
+        f"\n[bold cyan]Git Health — {path.name}[/bold cyan]\n"
+    )
+
+    console.print(
+        f"[bold]{score}/100[/bold]\n"
+    )
+
+    table = Table(
+        title="Repository Checks"
+    )
+
+    table.add_column("Check", style="bold")
+    table.add_column("Status", justify="center")
+    table.add_column("Details", style="cyan")
+
+    for check in checks:
+        status = (
+            "[green]✓ Healthy[/green]"
+            if check["ok"]
+            else "[yellow]⚠ Attention[/yellow]"
+        )
+
+        table.add_row(
+            check["name"],
+            status,
+            check["details"],
+        )
+
+    console.print(table)        

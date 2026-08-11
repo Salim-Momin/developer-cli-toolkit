@@ -14,9 +14,13 @@ from devkit.commands.project import (
 
 from devkit.commands.git import (
     git_branches,
+    git_changes,
+    git_health,
     git_log,
+    git_remote,
     git_status,
     git_summary,
+    git_sync,
 )
 
 console = Console()
@@ -135,13 +139,17 @@ def run_interactive_menu() -> None:
 
         elif choice == "7":
             console.print(
-                "\n[bold cyan]Git Tools[/bold cyan]\n"
+                "\n[bold cyan]🌿 Git Tools[/bold cyan]\n"
             )
 
-            console.print("1  Git Status")
-            console.print("2  Branches")
-            console.print("3  Recent Commits")
-            console.print("4  Repository Summary")
+            console.print("1  Status")
+            console.print("2  Changed Files")
+            console.print("3  Branches")
+            console.print("4  Recent Commits")
+            console.print("5  Repository Summary")
+            console.print("6  Remote Information")
+            console.print("7  Sync Status")
+            console.print("8  Git Health")
             console.print("0  Back")
 
             git_choice = typer.prompt(
@@ -152,13 +160,25 @@ def run_interactive_menu() -> None:
                 git_status()
 
             elif git_choice == "2":
-                git_branches()
+                git_changes()
 
             elif git_choice == "3":
-                git_log(limit=10)
+                git_branches()
 
             elif git_choice == "4":
+                git_log(limit=10)
+
+            elif git_choice == "5":
                 git_summary()
+
+            elif git_choice == "6":
+                git_remote()
+
+            elif git_choice == "7":
+                git_sync()
+
+            elif git_choice == "8":
+                git_health()
 
             elif git_choice == "0":
                 continue

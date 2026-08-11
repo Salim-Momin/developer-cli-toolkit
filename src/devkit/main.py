@@ -4,6 +4,7 @@ from devkit.commands.project import project_app
 from devkit.ui import run_interactive_menu
 from devkit.commands.search import search_text
 from devkit.commands.doctor import doctor
+from devkit.commands.git import git_app
 
 app = typer.Typer(
     name="devkit",
@@ -16,6 +17,11 @@ console = Console()
 app.add_typer(
     project_app,
     name="project",
+)
+
+app.add_typer(
+    git_app,
+    name="git",
 )
 
 app.command("search")(search_text)

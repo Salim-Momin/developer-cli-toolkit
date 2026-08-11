@@ -12,6 +12,13 @@ from devkit.commands.project import (
     project_tree,
 )
 
+from devkit.commands.git import (
+    git_branches,
+    git_log,
+    git_status,
+    git_summary,
+)
+
 console = Console()
 
 
@@ -48,8 +55,8 @@ def show_menu() -> None:
     table.add_row("4", "🌳 Project Tree")
 
     table.add_row("5", "🔎 Smart Search")
-    table.add_row("6",  "🩺 Environment Doctor")
-    table.add_row("7", "[dim]🌿 Git Tools — Coming Soon[/dim]")
+    table.add_row("6", "🩺 Environment Doctor")
+    table.add_row("7", "🌿 Git Tools")
     table.add_row("8", "[dim]🌐 API Tester — Coming Soon[/dim]")
     table.add_row("9", "[dim]🤖 AI Assistant — Coming Soon[/dim]")
 
@@ -126,7 +133,42 @@ def run_interactive_menu() -> None:
         elif choice == "6":
             doctor()
 
-        elif choice in {"7", "8", "9"}:
+        elif choice == "7":
+            console.print(
+                "\n[bold cyan]Git Tools[/bold cyan]\n"
+            )
+
+            console.print("1  Git Status")
+            console.print("2  Branches")
+            console.print("3  Recent Commits")
+            console.print("4  Repository Summary")
+            console.print("0  Back")
+
+            git_choice = typer.prompt(
+                "\nSelect Git option"
+            )
+
+            if git_choice == "1":
+                git_status()
+
+            elif git_choice == "2":
+                git_branches()
+
+            elif git_choice == "3":
+                git_log(limit=10)
+
+            elif git_choice == "4":
+                git_summary()
+
+            elif git_choice == "0":
+                continue
+
+            else:
+                console.print(
+                    "[red]✗ Invalid Git option.[/red]"
+                )
+
+        elif choice in {"8", "9"}:
             console.print(
                 "[yellow]⚠ This feature is coming in a future milestone.[/yellow]"
             )       

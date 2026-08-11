@@ -3,6 +3,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from devkit.commands.search import search_text
+from devkit.commands.doctor import doctor
 
 from devkit.commands.project import (
     project_info,
@@ -47,7 +48,7 @@ def show_menu() -> None:
     table.add_row("4", "🌳 Project Tree")
 
     table.add_row("5", "🔎 Smart Search")
-    table.add_row("6", "[dim]🩺 Environment Doctor — Coming Soon[/dim]")
+    table.add_row("6",  "🩺 Environment Doctor")
     table.add_row("7", "[dim]🌿 Git Tools — Coming Soon[/dim]")
     table.add_row("8", "[dim]🌐 API Tester — Coming Soon[/dim]")
     table.add_row("9", "[dim]🤖 AI Assistant — Coming Soon[/dim]")
@@ -122,10 +123,13 @@ def run_interactive_menu() -> None:
                 limit=50,
             )
 
-        elif choice in {"6", "7", "8", "9"}:
+        elif choice == "6":
+            doctor()
+
+        elif choice in {"7", "8", "9"}:
             console.print(
                 "[yellow]⚠ This feature is coming in a future milestone.[/yellow]"
-            )
+            )       
 
         elif choice == "0":
             console.print(

@@ -3,6 +3,7 @@ from rich.console import Console
 from devkit.commands.project import project_app
 from devkit.ui import run_interactive_menu
 from devkit.commands.search import search_text
+from devkit.commands.doctor import doctor
 
 app = typer.Typer(
     name="devkit",
@@ -18,6 +19,7 @@ app.add_typer(
 )
 
 app.command("search")(search_text)
+app.command("doctor")(doctor)
 
 @app.callback()
 def main(ctx: typer.Context):

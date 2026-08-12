@@ -7,6 +7,9 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+from devkit.terminal.progress import score_bar
+from devkit.terminal.status import status_badge
+from devkit.terminal.tables import create_table
 
 project_app = typer.Typer(
     help="Inspect and analyze development projects."
@@ -520,12 +523,22 @@ def project_health():
         show_header=True,
     )
 
+    table = create_table(
+        title="Project Health Checks"
+    )
+
     table.add_column("Check", style="bold")
     table.add_column("Status", justify="center")
 
     for item, detected in health_items.items():
-        status = "[green]✓ Pass[/green]" if detected else "[yellow]⚠ Missing[/yellow]"
-        table.add_row(item, status)
+        status = status_badge(
+            "pass" if detected else "warning"
+        )
+
+        table.add_row(
+            item,
+            status,
+        )
 
     console.print(table)
 

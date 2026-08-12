@@ -5,6 +5,8 @@ import re
 from rich.console import Console
 from rich.table import Table
 from rich.markup import escape
+from devkit.terminal.components import section_title, loading
+from devkit.terminal.tables import create_table
 
 search_app = typer.Typer(
     help="Search files and source code inside the current project."
@@ -259,14 +261,22 @@ def search_text(
 
         return
 
+    section_title(
+        "🔎 Smart Search",
+        f'Searching current project for "{query}"',
+    )
+
     try:
-        results = search_project(
-            root=project_path,
-            query=query,
-            extension=extension,
-            case_sensitive=case_sensitive,
-            regex=regex,
-        )
+        with loading(
+            "Searching project..."
+        ):
+            results = search_project(
+                root=project_path,
+                query=query,
+                extension=extension,
+                case_sensitive=case_sensitive,
+                regex=regex,
+            )
 
     except ValueError as error:
         console.print(
@@ -280,7 +290,7 @@ def search_text(
         )
         return
 
-    table = Table(
+    table = create_table(
         title=f"Search Results ({len(results)} matches)"
     )
 

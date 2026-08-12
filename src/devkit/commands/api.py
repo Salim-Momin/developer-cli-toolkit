@@ -15,7 +15,10 @@ from devkit.terminal.components import (
     warning,
 )
 from devkit.terminal.theme import console
-
+from devkit.terminal.tables import (
+    create_key_value_table,
+    create_table,
+)
 
 api_app = typer.Typer(
     help="Send and inspect HTTP API requests."
@@ -126,8 +129,12 @@ def display_response(
         str(response.url),
     )
 
-    summary = Table(
-        show_header=False
+    header_table = create_table(
+        title="Response Headers"
+    )
+
+    summary = create_key_value_table(
+        title="Request Summary"
     )
 
     summary.add_column(

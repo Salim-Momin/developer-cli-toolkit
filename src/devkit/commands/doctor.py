@@ -7,10 +7,14 @@ from rich.table import Table
 
 from devkit.terminal.components import (
     section_title,
+    loading,
     success,
     warning,
 )
 from devkit.terminal.theme import console
+from devkit.terminal.progress import score_bar
+from devkit.terminal.status import status_badge
+from devkit.terminal.tables import create_table
 
 def run_command(command: list[str]) -> str | None:
     """Run a command safely and return its output."""
@@ -181,8 +185,8 @@ def doctor():
         "Inspect the local developer environment.",
     )
 
-    with console.status(
-        "[cyan]Checking development tools...[/cyan]"
+    with loading(
+        "Checking development environment..."
     ):
         results = inspect_tools()
 
@@ -196,12 +200,12 @@ def doctor():
     score = calculate_environment_score(results)
 
     console.print(
-        f"{build_environment_bar(score)} "
+        f"{score_bar(score)} "
         f"[bold]{score}%[/bold]\n"
     )
 
-    table = Table(
-        title="Development Environment",
+    table = create_table(
+        title="Development Environment"
     )
 
     table.add_column(
@@ -220,10 +224,10 @@ def doctor():
     )
 
     for result in results:
-        status = (
-            "[green]✓ Installed[/green]"
+        status = status_badge(
+            "installed"
             if result["installed"]
-            else "[yellow]⚠ Missing[/yellow]"
+            else "missing"
         )
 
         table.add_row(

@@ -10,6 +10,9 @@ from devkit.terminal.components import (
     warning,
 )
 from devkit.terminal.theme import console
+from devkit.terminal.progress import score_bar
+from devkit.terminal.status import status_badge
+from devkit.terminal.tables import create_table
 
 git_app = typer.Typer(
     help="Inspect and work with Git repositories."
@@ -658,10 +661,11 @@ def git_health():
     )
 
     console.print(
+        f"{score_bar(score)} "
         f"[bold]{score}/100[/bold]\n"
     )
 
-    table = Table(
+    table = create_table(
         title="Repository Checks"
     )
 
@@ -670,10 +674,10 @@ def git_health():
     table.add_column("Details", style="cyan")
 
     for check in checks:
-        status = (
-            "[green]✓ Healthy[/green]"
+        status = status_badge(
+            "healthy"
             if check["ok"]
-            else "[yellow]⚠ Attention[/yellow]"
+            else "attention"
         )
 
         table.add_row(

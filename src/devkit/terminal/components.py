@@ -3,31 +3,39 @@ from pathlib import Path
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
+from rich.rule import Rule
 
 from devkit.terminal.theme import console
 
+from contextlib import contextmanager
 
 def show_banner() -> None:
-    """Display the main DevKit application banner."""
+    """Display the DevKit command-center banner."""
 
     project = Path.cwd().name
 
     content = Text()
 
-    content.append("⚡ DEVKIT\n", style="devkit.primary")
     content.append(
-        "Developer Command Center\n\n",
-        style="devkit.title",
+        "⚡ DEVKIT\n",
+        style="bold cyan",
     )
 
     content.append(
-        "Current Project  ",
-        style="devkit.secondary",
+        "Developer Command Center\n",
+        style="bold white",
+    )
+
+    content.append("\n")
+
+    content.append(
+        "PROJECT   ",
+        style="bright_black",
     )
 
     content.append(
         project,
-        style="devkit.info",
+        style="cyan",
     )
 
     console.print()
@@ -37,9 +45,9 @@ def show_banner() -> None:
             content,
             border_style="cyan",
             padding=(1, 4),
+            subtitle="[dim]v0.1.0[/dim]",
         )
     )
-
 
 def section_title(
     title: str,
@@ -122,3 +130,60 @@ def build_menu_table() -> Table:
     )
 
     return table
+
+def divider(
+    title: str | None = None,
+) -> None:
+    """Print a subtle DevKit divider."""
+
+    console.print(
+        Rule(
+            title or "",
+            style="bright_black",
+        )
+    )
+
+def result_summary(
+    title: str,
+    values: list[tuple[str, str]],
+) -> None:
+    """Display a compact result summary."""
+
+    from devkit.terminal.tables import (
+        create_key_value_table,
+    )
+
+    table = create_key_value_table(
+        title=title
+    )
+
+    for label, value in values:
+        table.add_row(
+            label,
+            value,
+        )
+
+    console.print(table)    
+
+def footer_hint(
+    text: str,
+) -> None:
+    """Display a subtle terminal usage hint."""
+
+    console.print()
+
+    console.print(
+        f"[bright_black]{text}[/bright_black]"
+    )
+
+@contextmanager
+def loading(
+    message: str,
+):
+    """Display a DevKit loading spinner."""
+
+    with console.status(
+        f"[cyan]{message}[/cyan]",
+        spinner="dots",
+    ):
+        yield    

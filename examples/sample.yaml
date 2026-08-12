@@ -1,0 +1,10 @@
+name: DevKit
+version: 0.1.0
+features:
+- project analysis
+- smart search
+- environment doctor
+- git tools
+settings:
+  debug: false
+  max_results: 50

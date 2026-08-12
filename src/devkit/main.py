@@ -5,6 +5,9 @@ from devkit.ui import run_interactive_menu
 from devkit.commands.search import search_text
 from devkit.commands.doctor import doctor
 from devkit.commands.git import git_app
+from devkit.commands.json_tools import json_app
+from devkit.commands.yaml_tools import yaml_app
+from devkit.commands.convert import convert_app
 
 app = typer.Typer(
     name="devkit",
@@ -22,6 +25,21 @@ app.add_typer(
 app.add_typer(
     git_app,
     name="git",
+)
+
+app.add_typer(
+    json_app,
+    name="json",
+)
+
+app.add_typer(
+    yaml_app,
+    name="yaml",
+)
+
+app.add_typer(
+    convert_app,
+    name="convert",
 )
 
 app.command("search")(search_text)

@@ -1,0 +1,9 @@
+name: DevKit
+version: 0.1.0
+language: Python
+features:
+- project analysis
+- search
+- doctor
+- git tools
+active: true

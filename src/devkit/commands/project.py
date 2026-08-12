@@ -8,8 +8,18 @@ from rich.console import Console
 from rich.table import Table
 
 from devkit.terminal.progress import score_bar
-from devkit.terminal.status import status_badge
-from devkit.terminal.tables import create_table
+from devkit.terminal.status import status_badge, yes_no
+from devkit.terminal.tables import create_table, create_key_value_table
+
+from devkit.services.project_service import (
+    analyze_project,
+    format_size,
+)
+
+from devkit.terminal.components import (
+    section_title,
+    success,
+)
 
 project_app = typer.Typer(
     help="Inspect and analyze development projects."
@@ -433,124 +443,215 @@ def project_info():
 
     project_path = Path.cwd()
 
-    project_type = detect_project_type(project_path)
-    technologies = detect_technologies(project_path)
-    project_files = detect_project_files(project_path)
-    project_size = get_project_size(project_path)
-    primary_language = get_primary_language(project_path)
-    health_items = detect_project_health_items(project_path)
-
-    file_count, directory_count = count_project_items(project_path)
-
-    table = Table(
-        title="Project Information",
-        show_header=False,
+    data = analyze_project(
+        project_path
     )
 
-    table.add_column("Property", style="bold cyan")
-    table.add_column("Value")
+    section_title(
+        "📦 Project Information",
+        data["name"],
+    )
 
-    table.add_row("Name", project_path.name)
-    table.add_row("Path", str(project_path))
-    table.add_row("Type", project_type)
-    table.add_row("Primary Language", primary_language)
-    table.add_row("Project Size", format_size(project_size))
-    table.add_row("Files", str(file_count))
-    table.add_row("Directories", str(directory_count))
+    table = create_key_value_table(
+        title="Project Overview"
+    )
 
-    for technology, detected in technologies.items():
-        status = "[green]Yes[/green]" if detected else "[red]No[/red]"
-        table.add_row(technology, status)
+    table.add_row(
+        "Name",
+        data["name"],
+    )
 
-    for item, detected in health_items.items():
-        status = "[green]Yes[/green]" if detected else "[yellow]No[/yellow]"
-        table.add_row(item, status)
+    table.add_row(
+        "Path",
+        data["path"],
+    )
 
-    console.print(table)
+    table.add_row(
+        "Type",
+        data["type"],
+    )
+
+    table.add_row(
+        "Primary Language",
+        data["primary_language"],
+    )
+
+    table.add_row(
+        "Project Size",
+        format_size(
+            data["size_bytes"]
+        ),
+    )
+
+    table.add_row(
+        "Files",
+        str(
+            data["file_count"]
+        ),
+    )
+
+    table.add_row(
+        "Directories",
+        str(
+            data["directory_count"]
+        ),
+    )
+
+    for item, detected in data[
+        "health_items"
+    ].items():
+        table.add_row(
+            item,
+            yes_no(
+                detected
+            ),
+        )
+
+    console.print(
+        table
+    )
 
 @project_app.command("stats")
 def project_stats():
-    """Display project file and language statistics."""
+    """Display project language and file statistics."""
 
     project_path = Path.cwd()
 
-    extension_stats = get_file_extension_stats(project_path)
-    language_stats = get_language_stats(extension_stats)
-
-    console.print(
-        f"\n[bold]Project:[/bold] {project_path.name}\n"
+    data = analyze_project(
+        project_path
     )
 
-    language_table = Table(title="Language Statistics")
+    section_title(
+        "📊 Project Statistics",
+        data["name"],
+    )
 
-    language_table.add_column("Language", style="bold cyan")
-    language_table.add_column("Files", justify="right")
+    language_table = create_table(
+        title="Language Statistics"
+    )
 
-    for language, count in language_stats.most_common():
-        language_table.add_row(language, str(count))
+    language_table.add_column(
+        "Language",
+        style="cyan",
+    )
 
-    console.print(language_table)
+    language_table.add_column(
+        "Files",
+        justify="right",
+    )
 
-    extension_table = Table(title="Top File Extensions")
+    for language, count in data[
+        "language_stats"
+    ].most_common():
+        language_table.add_row(
+            language,
+            str(count),
+        )
 
-    extension_table.add_column("Extension", style="bold magenta")
-    extension_table.add_column("Files", justify="right")
+    console.print(
+        language_table
+    )
 
-    for extension, count in extension_stats.most_common(10):
-        extension_table.add_row(extension, str(count))
+    extension_table = create_table(
+        title="Top File Extensions"
+    )
 
-    console.print(extension_table)
+    extension_table.add_column(
+        "Extension",
+        style="cyan",
+    )
+
+    extension_table.add_column(
+        "Files",
+        justify="right",
+    )
+
+    for extension, count in data[
+        "extension_stats"
+    ].most_common(10):
+        extension_table.add_row(
+            extension,
+            str(count),
+        )
+
+    console.print()
+    console.print(
+        extension_table
+    )
 
 @project_app.command("health")
 def project_health():
-    """Analyze basic project health and best-practice indicators."""
+    """Analyze project health and best practices."""
 
     project_path = Path.cwd()
 
-    health_items = detect_project_health_items(project_path)
-    score, recommendations = calculate_health_score(health_items)
+    data = analyze_project(
+        project_path
+    )
 
-    console.print(
-        f"\n[bold cyan]Project Health — {project_path.name}[/bold cyan]\n"
+    score = data[
+        "health_score"
+    ]
+
+    section_title(
+        "❤️ Project Health",
+        data["name"],
     )
 
     console.print(
-        f"{build_score_bar(score)} [bold]{score}/100[/bold]\n"
-    )
-
-    table = Table(
-        title="Health Checks",
-        show_header=True,
+        f"{score_bar(score)} "
+        f"[bold]{score}/100[/bold]\n"
     )
 
     table = create_table(
         title="Project Health Checks"
     )
 
-    table.add_column("Check", style="bold")
-    table.add_column("Status", justify="center")
+    table.add_column(
+        "Check"
+    )
 
-    for item, detected in health_items.items():
-        status = status_badge(
-            "pass" if detected else "warning"
-        )
+    table.add_column(
+        "Status",
+        justify="center",
+    )
 
+    for item, detected in data[
+        "health_items"
+    ].items():
         table.add_row(
             item,
-            status,
+            status_badge(
+                "pass"
+                if detected
+                else "warning"
+            ),
         )
 
-    console.print(table)
+    console.print(
+        table
+    )
+
+    recommendations = data[
+        "recommendations"
+    ]
 
     if recommendations:
-        console.print("\n[bold yellow]Recommendations[/bold yellow]")
+        console.print(
+            "\n[devkit.warning]"
+            "Recommendations"
+            "[/devkit.warning]"
+        )
 
         for recommendation in recommendations:
-            console.print(f"  • {recommendation}")
+            console.print(
+                f"  • {recommendation}"
+            )
 
     else:
-        console.print(
-            "\n[bold green]✓ No major project health issues detected.[/bold green]"
+        console.print()
+        success(
+            "No major project health issues detected."
         )
 
 @project_app.command("tree")

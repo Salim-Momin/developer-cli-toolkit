@@ -1,6 +1,7 @@
 import json
 import time
 from pathlib import Path
+from datetime import datetime
 
 import httpx
 import typer
@@ -18,6 +19,12 @@ from devkit.terminal.theme import console
 
 api_app = typer.Typer(
     help="Send and inspect HTTP API requests."
+)
+
+HISTORY_FILE = (
+    Path.home()
+    / ".devkit"
+    / "api_history.json"
 )
 
 def parse_headers(
@@ -62,7 +69,9 @@ def send_request(
     method: str,
     url: str,
     headers: dict[str, str] | None = None,
+    params: dict[str, str] | None = None,
     json_body=None,
+    raw_body: str | None = None,
     timeout: float = 10.0,
 ) -> tuple[httpx.Response, float]:
     """Send an HTTP request and return response plus duration."""
@@ -74,7 +83,9 @@ def send_request(
             method=method,
             url=url,
             headers=headers,
+            params=params,
             json=json_body,
+            content=raw_body,
             timeout=timeout,
             follow_redirects=True,
         )
@@ -98,6 +109,7 @@ def send_request(
 def display_response(
     response: httpx.Response,
     duration_ms: float,
+    show_headers: bool = False,
 ) -> None:
     """Display an HTTP response in a readable format."""
 
@@ -153,6 +165,29 @@ def display_response(
 
     console.print(summary)
 
+    if show_headers:
+        header_table = Table(
+            title="Response Headers"
+        )
+
+        header_table.add_column(
+            "Header",
+            style="cyan",
+        )
+
+        header_table.add_column(
+            "Value",
+        )
+
+        for name, value in response.headers.items():
+            header_table.add_row(
+                name,
+                value,
+            )
+
+        console.print()
+        console.print(header_table)
+
     console.print(
         "\n[devkit.secondary]Response Body[/devkit.secondary]\n"
     )
@@ -197,15 +232,25 @@ def execute_request(
     json_body: str | None,
     timeout: float,
     json_file: str | None = None,
+    param: list[str] | None = None,
+    raw_body: str | None = None,
+    save: str | None = None,
+    show_headers: bool = False,
 ) -> None:
     """Execute and display an API request."""
 
     try:
         headers = parse_headers(header)
+        params = parse_params(param)
 
         if json_body and json_file:
             raise ValueError(
                 "Use either --json or --json-file, not both."
+            )
+
+        if raw_body and (json_body or json_file):
+            raise ValueError(
+                "Use raw body or JSON body, not both."
             )
 
         if json_file:
@@ -217,7 +262,9 @@ def execute_request(
             method=method,
             url=url,
             headers=headers,
+            params=params,
             json_body=body,
+            raw_body=raw_body,
             timeout=timeout,
         )
 
@@ -228,7 +275,102 @@ def execute_request(
     display_response(
         response,
         duration,
+        show_headers=show_headers,
     )
+
+    if save:
+        save_response(
+            response,
+            save,
+        )
+
+    save_request_history(
+        method=method,
+        url=str(response.url),
+        status=response.status_code,
+        duration_ms=duration,
+    )
+
+def save_response(
+    response: httpx.Response,
+    output: str,
+) -> None:
+    """Save response body to a file."""
+
+    path = Path(output)
+
+    try:
+        path.write_bytes(
+            response.content
+        )
+
+    except OSError as exc:
+        error(
+            f"Could not save response: {exc}"
+        )
+        return
+
+    success(
+        f"Response saved to {path}."
+    )
+
+def save_request_history(
+    method: str,
+    url: str,
+    status: int,
+    duration_ms: float,
+) -> None:
+    """Store API request metadata locally."""
+
+    HISTORY_FILE.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    history = []
+
+    if HISTORY_FILE.exists():
+        try:
+            history = json.loads(
+                HISTORY_FILE.read_text(
+                    encoding="utf-8-sig"
+                )
+            )
+
+        except (
+            json.JSONDecodeError,
+            OSError,
+        ):
+            history = []
+
+    history.append(
+        {
+            "time": datetime.now().isoformat(
+                timespec="seconds"
+            ),
+            "method": method,
+            "url": url,
+            "status": status,
+            "duration_ms": round(
+                duration_ms,
+                2,
+            ),
+        }
+    )
+
+    history = history[-100:]
+
+    try:
+        HISTORY_FILE.write_text(
+            json.dumps(
+                history,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+
+    except OSError:
+        pass
 
 def load_json_body_file(
     path: str | None,
@@ -264,6 +406,89 @@ def load_json_body_file(
             f"Could not read {path}: {exc}"
         ) from exc
 
+def parse_params(
+    params: list[str] | None,
+) -> dict[str, str]:
+    """Convert CLI query parameters into a dictionary."""
+
+    parsed = {}
+
+    if not params:
+        return parsed
+
+    for param in params:
+        if "=" not in param:
+            raise ValueError(
+                f"Invalid query parameter: {param}. Use 'key=value'."
+            )
+
+        key, value = param.split("=", maxsplit=1)
+
+        parsed[key.strip()] = value.strip()
+
+    return parsed
+
+@api_app.command("history")
+def api_history(
+    limit: int = typer.Option(
+        10,
+        "--limit",
+        "-l",
+        min=1,
+        max=100,
+    ),
+):
+    """Show recent API requests."""
+
+    if not HISTORY_FILE.exists():
+        warning(
+            "No API history found."
+        )
+        return
+
+    try:
+        history = json.loads(
+            HISTORY_FILE.read_text(
+                encoding="utf-8-sig"
+            )
+        )
+
+    except (
+        json.JSONDecodeError,
+        OSError,
+    ):
+        error(
+            "Could not read API history."
+        )
+        raise typer.Exit(code=1)
+
+    rows = history[-limit:][::-1]
+
+    table = Table(
+        title="API Request History"
+    )
+
+    table.add_column("Time")
+    table.add_column(
+        "Method",
+        style="cyan",
+    )
+    table.add_column("Status")
+    table.add_column("Time")
+    table.add_column("URL")
+
+    for item in rows:
+        table.add_row(
+            item["time"],
+            item["method"],
+            str(item["status"]),
+            f'{item["duration_ms"]} ms',
+            item["url"],
+        )
+
+    console.print()
+    console.print(table)
+
 @api_app.command("get")
 def api_get(
     url: str = typer.Argument(
@@ -283,6 +508,23 @@ def api_get(
         min=0.1,
         max=120,
     ),
+    param: list[str] | None = typer.Option(
+        None,
+        "--param",
+        "-p",
+        help="Query parameter in key=value format.",
+    ),
+    save: str | None = typer.Option(
+        None,
+        "--save",
+        "-s",
+        help="Save response body to a file.",
+    ),
+    show_headers: bool = typer.Option(
+        False,
+        "--headers",
+        help="Show response headers.",
+    ),
 ):
     """Send an HTTP GET request."""
 
@@ -292,6 +534,9 @@ def api_get(
         header=header,
         json_body=None,
         timeout=timeout,
+        param=param,
+        save=save,
+        show_headers=show_headers,
     )    
 
 @api_app.command("post")
@@ -325,6 +570,11 @@ def api_post(
         "-J",
         help="Load JSON request body from a file.",
     ),
+    raw_body: str | None = typer.Option(
+        None,
+        "--raw",
+        help="Send a raw text request body.",
+    ),
 ):
     """Send an HTTP POST request."""
 
@@ -335,10 +585,16 @@ def api_post(
         json_body=json_body,
         timeout=timeout,
         json_file=json_file,
+        raw_body=raw_body,
     )
 
 @api_app.command("put")
 def api_put(
+    json_file: str | None,
+    param: list[str] | None,
+    raw_body: str | None,
+    save: str | None,
+    show_headers: bool,
     url: str,
     json_body: str | None = typer.Option(
         None,
@@ -364,10 +620,20 @@ def api_put(
         header,
         json_body,
         timeout,
+        json_file,
+        param,
+        raw_body,
+        save,
+        show_headers,
     )    
 
 @api_app.command("patch")
 def api_patch(
+    json_file: str | None,
+    param: list[str] | None,
+    raw_body: str | None,
+    save: str | None,
+    show_headers: bool, 
     url: str,
     json_body: str | None = typer.Option(
         None,
@@ -393,6 +659,11 @@ def api_patch(
         header,
         json_body,
         timeout,
+        json_file,
+        param,
+        raw_body,
+        save,
+        show_headers,
     )    
 
 @api_app.command("delete")

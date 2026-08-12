@@ -28,7 +28,16 @@ from devkit.terminal.components import (
     section_title,
     show_banner,
 )
+
 from devkit.terminal.theme import console
+
+from devkit.commands.api import (
+    api_delete,
+    api_get,
+    api_patch,
+    api_post,
+    api_put,
+)
 
 def show_menu() -> None:
     """Display the main DevKit command menu."""
@@ -94,7 +103,7 @@ def show_menu() -> None:
 
     future_table.add_row(
         "8",
-        "[dim]API Tester[/dim]",
+        "API Tester",
     )
 
     future_table.add_row(
@@ -242,10 +251,97 @@ def run_interactive_menu() -> None:
                 console.print(
                     "[devkit.error]✗ Invalid Git option.[/devkit.error]"
                 )
-        elif choice in {"8", "9"}:
-            console.print(
-                "[yellow]⚠ This feature is coming in a future milestone.[/yellow]"
-            )       
+
+        elif choice == "8":
+            console.clear()
+
+            section_title(
+                "🌐 API Tester",
+                "Send and inspect HTTP requests.",
+            )
+
+            api_table = build_menu_table()
+
+            api_table.add_row("1", "GET")
+            api_table.add_row("2", "POST")
+            api_table.add_row("3", "PUT")
+            api_table.add_row("4", "PATCH")
+            api_table.add_row("5", "DELETE")
+            api_table.add_row("0", "Back")
+
+            console.print(api_table)
+
+            api_choice = typer.prompt(
+                "\nChoose HTTP method"
+            )
+
+            if api_choice == "0":
+                continue
+
+            url = typer.prompt(
+                "Request URL"
+            )
+
+            if api_choice == "1":
+                api_get(
+                    url=url,
+                    header=None,
+                    timeout=10.0,
+                )
+
+            elif api_choice == "2":
+                body = typer.prompt(
+                    "JSON body",
+                    default="",
+                    show_default=False,
+                )
+
+                api_post(
+                    url=url,
+                    json_body=body or None,
+                    header=None,
+                    timeout=10.0,
+                )
+
+            elif api_choice == "3":
+                body = typer.prompt(
+                    "JSON body",
+                    default="",
+                    show_default=False,
+                )
+
+                api_put(
+                    url=url,
+                    json_body=body or None,
+                    header=None,
+                    timeout=10.0,
+                )
+
+            elif api_choice == "4":
+                body = typer.prompt(
+                    "JSON body",
+                    default="",
+                    show_default=False,
+                )
+
+                api_patch(
+                    url=url,
+                    json_body=body or None,
+                    header=None,
+                    timeout=10.0,
+                )
+
+            elif api_choice == "5":
+                api_delete(
+                    url=url,
+                    header=None,
+                    timeout=10.0,
+                )
+
+            else:
+                console.print(
+                    "[devkit.error]✗ Invalid API option.[/devkit.error]"
+                )      
 
         elif choice == "0":
             console.print(

@@ -8,6 +8,7 @@ from devkit.commands.git import git_app
 from devkit.commands.json_tools import json_app
 from devkit.commands.yaml_tools import yaml_app
 from devkit.commands.convert import convert_app
+from devkit.commands.api import api_app
 
 app = typer.Typer(
     name="devkit",
@@ -40,6 +41,11 @@ app.add_typer(
 app.add_typer(
     convert_app,
     name="convert",
+)
+
+app.add_typer(
+    api_app,
+    name="api",
 )
 
 app.command("search")(search_text)

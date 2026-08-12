@@ -105,8 +105,12 @@ def show_menu() -> None:
         "🌐 API Tester",
     )
 
+    tools_table.add_row(
+        "10",
+        "📚 Command Reference",
+    )
+    
     console.print(tools_table)
-
     # -----------------------------------------------------
     # Coming Soon
     # -----------------------------------------------------
@@ -127,7 +131,6 @@ def show_menu() -> None:
     )
 
     console.print(future_table)
-
     # -----------------------------------------------------
     # Exit
     # -----------------------------------------------------
@@ -473,6 +476,302 @@ def pause_menu() -> None:
         show_default=False,
     )
 
+def show_command_reference() -> None:
+    """Display all DevKit commands grouped by tool."""
+
+    console.clear()
+
+    section_title(
+        "📚 DevKit Command Reference",
+        "All available commands grouped by tool.",
+    )
+
+    # Project commands
+    project_table = build_menu_table()
+
+    project_table.add_row(
+        "",
+        "devkit project info",
+    )
+
+    project_table.add_row(
+        "",
+        "devkit project stats",
+    )
+
+    project_table.add_row(
+        "",
+        "devkit project health",
+    )
+
+    project_table.add_row(
+        "",
+        "devkit project tree",
+    )
+
+    project_table.add_row(
+        "",
+        "devkit project tree -d 2",
+    )
+
+    project_table.add_row(
+        "",
+        "devkit project tree --no-files",
+    )
+
+    project_table.add_row(
+        "",
+        "devkit project tree -e py",
+    )
+
+    console.print(
+        "[devkit.primary]PROJECT TOOLS[/devkit.primary]"
+    )
+
+    console.print(project_table)
+
+    console.print()
+
+    # Search commands
+    search_table = build_menu_table()
+
+    search_table.add_row(
+        "",
+        'devkit search "TODO"',
+    )
+
+    search_table.add_row(
+        "",
+        'devkit search "import" -e py',
+    )
+
+    search_table.add_row(
+        "",
+        'devkit search "project" -f',
+    )
+
+    search_table.add_row(
+        "",
+        'devkit search "TODO|FIXME" -r',
+    )
+
+    search_table.add_row(
+        "",
+        'devkit search "FastAPI" -c',
+    )
+
+    search_table.add_row(
+        "",
+        'devkit search "import" -l 10',
+    )
+
+    console.print(
+        "[devkit.primary]SMART SEARCH[/devkit.primary]"
+    )
+
+    console.print(search_table)
+
+    console.print()
+
+    # Doctor
+    doctor_table = build_menu_table()
+
+    doctor_table.add_row(
+        "",
+        "devkit doctor",
+    )
+
+    console.print(
+        "[devkit.primary]ENVIRONMENT DOCTOR[/devkit.primary]"
+    )
+
+    console.print(doctor_table)
+
+    console.print()
+
+    # Git commands
+    git_table = build_menu_table()
+
+    git_table.add_row("", "devkit git status")
+    git_table.add_row("", "devkit git changes")
+    git_table.add_row("", "devkit git branches")
+    git_table.add_row("", "devkit git log")
+    git_table.add_row("", "devkit git log -l 5")
+    git_table.add_row("", "devkit git summary")
+    git_table.add_row("", "devkit git remote")
+    git_table.add_row("", "devkit git sync")
+    git_table.add_row("", "devkit git health")
+
+    console.print(
+        "[devkit.primary]GIT TOOLKIT[/devkit.primary]"
+    )
+
+    console.print(git_table)
+
+    console.print()
+
+    # JSON commands
+    json_table = build_menu_table()
+
+    json_table.add_row(
+        "",
+        "devkit json validate file.json",
+    )
+
+    json_table.add_row(
+        "",
+        "devkit json format file.json",
+    )
+
+    json_table.add_row(
+        "",
+        "devkit json format file.json -w",
+    )
+
+    json_table.add_row(
+        "",
+        "devkit json minify file.json",
+    )
+
+    json_table.add_row(
+        "",
+        "devkit json inspect file.json",
+    )
+
+    console.print(
+        "[devkit.primary]JSON TOOLS[/devkit.primary]"
+    )
+
+    console.print(json_table)
+
+    console.print()
+
+    # YAML commands
+    yaml_table = build_menu_table()
+
+    yaml_table.add_row(
+        "",
+        "devkit yaml validate file.yaml",
+    )
+
+    yaml_table.add_row(
+        "",
+        "devkit yaml format file.yaml",
+    )
+
+    yaml_table.add_row(
+        "",
+        "devkit yaml format file.yaml -w",
+    )
+
+    yaml_table.add_row(
+        "",
+        "devkit yaml inspect file.yaml",
+    )
+
+    console.print(
+        "[devkit.primary]YAML TOOLS[/devkit.primary]"
+    )
+
+    console.print(yaml_table)
+
+    console.print()
+
+    # Convert commands
+    convert_table = build_menu_table()
+
+    convert_table.add_row(
+        "",
+        "devkit convert json-to-yaml file.json",
+    )
+
+    convert_table.add_row(
+        "",
+        "devkit convert json-to-yaml file.json -o file.yaml",
+    )
+
+    convert_table.add_row(
+        "",
+        "devkit convert yaml-to-json file.yaml",
+    )
+
+    convert_table.add_row(
+        "",
+        "devkit convert yaml-to-json file.yaml -o file.json",
+    )
+
+    console.print(
+        "[devkit.primary]FORMAT CONVERSION[/devkit.primary]"
+    )
+
+    console.print(convert_table)
+
+    console.print()
+
+    # API commands
+    api_table = build_menu_table()
+
+    api_table.add_row(
+        "",
+        "devkit api get URL",
+    )
+
+    api_table.add_row(
+        "",
+        "devkit api get URL -p key=value",
+    )
+
+    api_table.add_row(
+        "",
+        "devkit api get URL --headers",
+    )
+
+    api_table.add_row(
+        "",
+        "devkit api get URL -s response.json",
+    )
+
+    api_table.add_row(
+        "",
+        "devkit api post URL --json-file body.json",
+    )
+
+    api_table.add_row(
+        "",
+        'devkit api post URL --raw "hello"',
+    )
+
+    api_table.add_row(
+        "",
+        "devkit api put URL",
+    )
+
+    api_table.add_row(
+        "",
+        "devkit api patch URL",
+    )
+
+    api_table.add_row(
+        "",
+        "devkit api delete URL",
+    )
+
+    api_table.add_row(
+        "",
+        "devkit api history",
+    )
+
+    console.print(
+        "[devkit.primary]API TESTER[/devkit.primary]"
+    )
+
+    console.print(api_table)
+
+    console.print()
+
+    footer_hint(
+        "Use --help after any command for detailed options."
+    )
 
 def run_interactive_menu() -> None:
     """Run the main interactive DevKit command center."""
@@ -601,6 +900,11 @@ def run_interactive_menu() -> None:
         # -----------------------------------------------------
         # Exit
         # -----------------------------------------------------
+
+        elif choice == "10":
+            show_command_reference()
+
+            pause_menu()
 
         elif choice == "0":
             console.clear()

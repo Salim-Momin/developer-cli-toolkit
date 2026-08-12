@@ -1,63 +1,43 @@
-import subprocess
 from pathlib import Path
 
 import typer
-from rich.table import Table
+
+from devkit.services.git_service import (
+    get_changed_files,
+    get_current_branch,
+    get_git_health,
+    get_local_branches,
+    get_recent_commits,
+    get_remotes,
+    get_repository_summary,
+    get_status_summary,
+    get_sync_status,
+    is_git_repository,
+)
+
 from devkit.terminal.components import (
     error,
     section_title,
     success,
     warning,
 )
-from devkit.terminal.theme import console
+
 from devkit.terminal.progress import score_bar
 from devkit.terminal.status import status_badge
-from devkit.terminal.tables import create_table
+from devkit.terminal.tables import (
+    create_key_value_table,
+    create_table,
+)
+from devkit.terminal.theme import console
+
 
 git_app = typer.Typer(
     help="Inspect and work with Git repositories."
 )
 
-def run_git_command(
-    args: list[str],
-    cwd: Path | None = None,
-) -> str | None:
-    """Run a Git command and return cleaned output."""
-
-    try:
-        result = subprocess.run(
-            ["git", *args],
-            cwd=cwd,
-            capture_output=True,
-            text=True,
-            timeout=10,
-            shell=False,
-        )
-
-        if result.returncode != 0:
-            return None
-
-        return result.stdout.strip()
-
-    except (
-        FileNotFoundError,
-        subprocess.TimeoutExpired,
-        OSError,
-    ):
-        return None
-
-def is_git_repository(path: Path) -> bool:
-    """Return True if path is inside a Git repository."""
-
-    result = run_git_command(
-        ["rev-parse", "--is-inside-work-tree"],
-        cwd=path,
-    )
-
-    return result == "true"    
 
 def require_git_repository() -> Path:
-    """Validate that the current folder belongs to a Git repository."""
+    """Validate that the current directory belongs to a Git repository."""
 
     path = Path.cwd()
 
@@ -74,146 +54,8 @@ def require_git_repository() -> Path:
 
         raise typer.Exit(code=1)
 
-    return path    
+    return path
 
-def get_tracking_branch(
-    path: Path,
-) -> str | None:
-    """Return the upstream tracking branch."""
-
-    return run_git_command(
-        [
-            "rev-parse",
-            "--abbrev-ref",
-            "--symbolic-full-name",
-            "@{upstream}",
-        ],
-        cwd=path,
-    )
-
-def get_ahead_behind(
-    path: Path,
-    upstream: str,
-) -> tuple[int, int]:
-    """Return ahead and behind counts against upstream."""
-
-    output = run_git_command(
-        [
-            "rev-list",
-            "--left-right",
-            "--count",
-            f"HEAD...{upstream}",
-        ],
-        cwd=path,
-    )
-
-    if not output:
-        return 0, 0
-
-    parts = output.split()
-
-    if len(parts) != 2:
-        return 0, 0
-
-    try:
-        ahead = int(parts[0])
-        behind = int(parts[1])
-    except ValueError:
-        return 0, 0
-
-    return ahead, behind
-
-def collect_git_health(
-    path: Path,
-) -> list[dict]:
-    """Collect repository health checks."""
-
-    checks = []
-
-    branch = run_git_command(
-        ["branch", "--show-current"],
-        cwd=path,
-    )
-
-    checks.append(
-        {
-            "name": "Current Branch",
-            "ok": bool(branch),
-            "details": branch or "Detached HEAD",
-        }
-    )
-
-    origin = run_git_command(
-        ["remote", "get-url", "origin"],
-        cwd=path,
-    )
-
-    checks.append(
-        {
-            "name": "Origin Remote",
-            "ok": bool(origin),
-            "details": origin or "Not configured",
-        }
-    )
-
-    upstream = get_tracking_branch(path)
-
-    checks.append(
-        {
-            "name": "Tracking Branch",
-            "ok": bool(upstream),
-            "details": upstream or "Not configured",
-        }
-    )
-
-    username = run_git_command(
-        ["config", "user.name"],
-        cwd=path,
-    ) or run_git_command(
-        ["config", "--global", "user.name"],
-        cwd=path,
-    )
-
-    email = run_git_command(
-        ["config", "user.email"],
-        cwd=path,
-    ) or run_git_command(
-        ["config", "--global", "user.email"],
-        cwd=path,
-    )
-
-    identity_ok = bool(username and email)
-
-    checks.append(
-        {
-            "name": "Git Identity",
-            "ok": identity_ok,
-            "details": (
-                f"{username} <{email}>"
-                if identity_ok
-                else "Name or email missing"
-            ),
-        }
-    )
-
-    status = run_git_command(
-        ["status", "--porcelain"],
-        cwd=path,
-    ) or ""
-
-    checks.append(
-        {
-            "name": "Working Tree",
-            "ok": not bool(status.strip()),
-            "details": (
-                "Clean"
-                if not status.strip()
-                else "Uncommitted changes detected"
-            ),
-        }
-    )
-
-    return checks
 
 @git_app.command("status")
 def git_status():
@@ -221,156 +63,150 @@ def git_status():
 
     path = require_git_repository()
 
-    branch = run_git_command(
-        ["branch", "--show-current"],
-        cwd=path,
-    ) or "Unknown"
+    data = get_status_summary(
+        path
+    )
 
-    porcelain = run_git_command(
-        ["status", "--porcelain"],
-        cwd=path,
-    ) or ""
-
-    lines = [
-        line
-        for line in porcelain.splitlines()
-        if line.strip()
-    ]
-
-    staged = 0
-    modified = 0
-    untracked = 0
-    deleted = 0
-
-    for line in lines:
-        status = line[:2]
-
-        if status == "??":
-            untracked += 1
-            continue
-
-        if status[0] not in {" ", "?"}:
-            staged += 1
-
-        if status[1] == "M":
-            modified += 1
-
-        if "D" in status:
-            deleted += 1
+    branch = (
+        get_current_branch(path)
+        or "Unknown"
+    )
 
     section_title(
         "🌿 Git Status",
         path.name,
     )
 
-    table = Table(show_header=False)
+    table = create_key_value_table(
+        title="Working Tree"
+    )
 
-    table.add_column("Property", style="bold")
-    table.add_column("Value")
+    table.add_row(
+        "Branch",
+        branch,
+    )
 
-    table.add_row("Branch", branch)
-    table.add_row("Staged", str(staged))
-    table.add_row("Modified", str(modified))
-    table.add_row("Untracked", str(untracked))
-    table.add_row("Deleted", str(deleted))
+    table.add_row(
+        "Staged",
+        str(data["staged"]),
+    )
+
+    table.add_row(
+        "Modified",
+        str(data["modified"]),
+    )
+
+    table.add_row(
+        "Untracked",
+        str(data["untracked"]),
+    )
+
+    table.add_row(
+        "Deleted",
+        str(data["deleted"]),
+    )
 
     console.print(table)
 
-    if not lines:
+    if data["clean"]:
         console.print()
+
         success(
             "Working tree is clean."
         )
 
+
+@git_app.command("changes")
+def git_changes():
+    """Show changed files in the working tree."""
+
+    path = require_git_repository()
+
+    changes = get_changed_files(
+        path
+    )
+
+    section_title(
+        "🌿 Changed Files",
+        path.name,
+    )
+
+    if not changes:
+        success(
+            "No changed files."
+        )
+        return
+
+    table = create_table(
+        title="Changed Files"
+    )
+
+    table.add_column(
+        "Status",
+        style="yellow",
+    )
+
+    table.add_column(
+        "File",
+        style="cyan",
+    )
+
+    for change in changes:
+        table.add_row(
+            change["status"],
+            change["file"],
+        )
+
+    console.print(table)
+
+
 @git_app.command("branches")
 def git_branches():
     """List local Git branches."""
 
     path = require_git_repository()
 
-    output = run_git_command(
-        [
-            "for-each-ref",
-            "--format=%(refname:short)|%(HEAD)",
-            "refs/heads/",
-        ],
-        cwd=path,
+    branches = get_local_branches(
+        path
     )
 
-    if not output:
-        console.print(
-            "\n[yellow]No local branches found.[/yellow]"
+    section_title(
+        "🌿 Local Branches",
+        path.name,
+    )
+
+    if not branches:
+        warning(
+            "No local branches found."
         )
         return
 
-    table = Table(
-        title="Local Branches"
+    table = create_table(
+        title="Branches"
     )
 
-    table.add_column("Branch", style="cyan")
-    table.add_column("Current", justify="center")
+    table.add_column(
+        "Branch",
+        style="cyan",
+    )
 
-    for line in output.splitlines():
-        branch, marker = line.split("|", maxsplit=1)
+    table.add_column(
+        "Current",
+        justify="center",
+    )
 
-        current = (
-            "[green]✓[/green]"
-            if marker == "*"
-            else ""
-        )
-
+    for branch in branches:
         table.add_row(
-            branch,
-            current,
+            branch["name"],
+            (
+                "[green]✓[/green]"
+                if branch["current"]
+                else ""
+            ),
         )
 
-    console.print()
-    console.print(table)        
+    console.print(table)
 
-@git_app.command("branches")
-def git_branches():
-    """List local Git branches."""
-
-    path = require_git_repository()
-
-    output = run_git_command(
-        [
-            "for-each-ref",
-            "--format=%(refname:short)|%(HEAD)",
-            "refs/heads/",
-        ],
-        cwd=path,
-    )
-
-    if not output:
-        console.print(
-            "\n[yellow]No local branches found.[/yellow]"
-        )
-        return
-
-    table = Table(
-        title="Local Branches"
-    )
-
-    table.add_column("Branch", style="cyan")
-    table.add_column("Current", justify="center")
-
-    for line in output.splitlines():
-        branch, marker = line.split("|", maxsplit=1)
-
-        current = (
-            "[green]✓[/green]"
-            if marker == "*"
-            else ""
-        )
-
-        table.add_row(
-            branch,
-            current,
-        )
-
-    console.print()
-    console.print(table)    
 
 @git_app.command("log")
 def git_log(
@@ -387,47 +223,53 @@ def git_log(
 
     path = require_git_repository()
 
-    output = run_git_command(
-        [
-            "log",
-            f"-{limit}",
-            "--pretty=format:%h|%an|%ar|%s",
-        ],
-        cwd=path,
+    commits = get_recent_commits(
+        path,
+        limit=limit,
     )
 
-    if not output:
-        console.print(
-            "\n[yellow]No commits found.[/yellow]"
+    section_title(
+        "🌿 Recent Commits",
+        path.name,
+    )
+
+    if not commits:
+        warning(
+            "No commits found."
         )
         return
 
-    table = Table(
-        title=f"Recent Commits ({limit})"
+    table = create_table(
+        title=f"Recent Commits · {len(commits)}"
     )
 
-    table.add_column("Hash", style="cyan")
-    table.add_column("Author")
-    table.add_column("When")
-    table.add_column("Message")
+    table.add_column(
+        "Hash",
+        style="cyan",
+    )
 
-    for line in output.splitlines():
-        parts = line.split("|", maxsplit=3)
+    table.add_column(
+        "Author",
+    )
 
-        if len(parts) != 4:
-            continue
+    table.add_column(
+        "When",
+    )
 
-        commit_hash, author, when, message = parts
+    table.add_column(
+        "Message",
+    )
 
+    for commit in commits:
         table.add_row(
-            commit_hash,
-            author,
-            when,
-            message,
+            commit["hash"],
+            commit["author"],
+            commit["when"],
+            commit["message"],
         )
 
-    console.print()
     console.print(table)
+
 
 @git_app.command("summary")
 def git_summary():
@@ -435,106 +277,55 @@ def git_summary():
 
     path = require_git_repository()
 
-    branch = run_git_command(
-        ["branch", "--show-current"],
-        cwd=path,
-    ) or "Unknown"
-
-    root = run_git_command(
-        ["rev-parse", "--show-toplevel"],
-        cwd=path,
-    ) or str(path)
-
-    remote = run_git_command(
-        ["remote", "get-url", "origin"],
-        cwd=path,
-    ) or "Not configured"
-
-    commit_count = run_git_command(
-        ["rev-list", "--count", "HEAD"],
-        cwd=path,
-    ) or "0"
-
-    latest_commit = run_git_command(
-        [
-            "log",
-            "-1",
-            "--pretty=format:%h - %s",
-        ],
-        cwd=path,
-    ) or "No commits"
-
-    porcelain = run_git_command(
-        ["status", "--porcelain"],
-        cwd=path,
-    ) or ""
-
-    clean = not bool(porcelain.strip())
-
-    console.print(
-        f"\n[bold cyan]Git Repository Summary — {path.name}[/bold cyan]\n"
+    data = get_repository_summary(
+        path
     )
 
-    table = Table(show_header=False)
+    section_title(
+        "🌿 Repository Summary",
+        path.name,
+    )
 
-    table.add_column("Property", style="bold")
-    table.add_column("Value")
+    table = create_key_value_table(
+        title="Repository"
+    )
 
-    table.add_row("Repository Root", root)
-    table.add_row("Branch", branch)
-    table.add_row("Commits", commit_count)
-    table.add_row("Origin", remote)
-    table.add_row("Latest Commit", latest_commit)
+    table.add_row(
+        "Repository Root",
+        data["root"],
+    )
+
+    table.add_row(
+        "Branch",
+        data["branch"],
+    )
+
+    table.add_row(
+        "Commits",
+        str(data["commit_count"]),
+    )
+
+    table.add_row(
+        "Origin",
+        data["origin"],
+    )
+
+    table.add_row(
+        "Latest Commit",
+        data["latest_commit"],
+    )
 
     table.add_row(
         "Working Tree",
         (
             "[green]Clean[/green]"
-            if clean
+            if data["clean"]
             else "[yellow]Changes detected[/yellow]"
         ),
     )
 
     console.print(table)
 
-@git_app.command("changes")
-def git_changes():
-    """Show changed files in the working tree."""
-
-    path = require_git_repository()
-
-    output = run_git_command(
-        ["status", "--short"],
-        cwd=path,
-    ) or ""
-
-    if not output:
-        console.print(
-            "\n[bold green]✓ No changed files.[/bold green]"
-        )
-        return
-
-    table = Table(
-        title="Changed Files"
-    )
-
-    table.add_column("Status", style="yellow")
-    table.add_column("File", style="cyan")
-
-    for line in output.splitlines():
-        if len(line) < 3:
-            continue
-
-        status = line[:2].strip() or "-"
-        file_name = line[3:].strip()
-
-        table.add_row(
-            status,
-            file_name,
-        )
-
-    console.print()
-    console.print(table)    
 
 @git_app.command("remote")
 def git_remote():
@@ -542,43 +333,48 @@ def git_remote():
 
     path = require_git_repository()
 
-    output = run_git_command(
-        ["remote", "-v"],
-        cwd=path,
+    remotes = get_remotes(
+        path
     )
 
-    if not output:
-        console.print(
-            "\n[yellow]No Git remotes configured.[/yellow]"
+    section_title(
+        "🌿 Git Remotes",
+        path.name,
+    )
+
+    if not remotes:
+        warning(
+            "No Git remotes configured."
         )
         return
 
-    table = Table(
+    table = create_table(
         title="Git Remotes"
     )
 
-    table.add_column("Name", style="cyan")
-    table.add_column("URL")
-    table.add_column("Type", style="dim")
+    table.add_column(
+        "Name",
+        style="cyan",
+    )
 
-    for line in output.splitlines():
-        parts = line.split()
+    table.add_column(
+        "URL",
+    )
 
-        if len(parts) < 3:
-            continue
+    table.add_column(
+        "Type",
+        style="dim",
+    )
 
-        name = parts[0]
-        url = parts[1]
-        remote_type = parts[2].strip("()")
-
+    for remote in remotes:
         table.add_row(
-            name,
-            url,
-            remote_type,
+            remote["name"],
+            remote["url"],
+            remote["type"],
         )
 
-    console.print()
     console.print(table)
+
 
 @git_app.command("sync")
 def git_sync():
@@ -586,59 +382,76 @@ def git_sync():
 
     path = require_git_repository()
 
-    branch = run_git_command(
-        ["branch", "--show-current"],
-        cwd=path,
-    ) or "Unknown"
-
-    upstream = get_tracking_branch(path)
-
-    console.print(
-        f"\n[bold cyan]Git Sync Status — {branch}[/bold cyan]\n"
+    data = get_sync_status(
+        path
     )
 
-    if not upstream:
-        console.print(
-            "[yellow]⚠ No upstream tracking branch configured.[/yellow]"
+    section_title(
+        "🌿 Git Sync Status",
+        data["branch"],
+    )
+
+    if not data["upstream"]:
+        warning(
+            "No upstream tracking branch configured."
         )
         return
 
-    ahead, behind = get_ahead_behind(
-        path,
-        upstream,
+    table = create_key_value_table(
+        title="Synchronization"
     )
 
-    table = Table(show_header=False)
+    table.add_row(
+        "Local Branch",
+        data["branch"],
+    )
 
-    table.add_column("Property", style="bold")
-    table.add_column("Value")
+    table.add_row(
+        "Upstream",
+        data["upstream"],
+    )
 
-    table.add_row("Local Branch", branch)
-    table.add_row("Upstream", upstream)
-    table.add_row("Ahead", str(ahead))
-    table.add_row("Behind", str(behind))
+    table.add_row(
+        "Ahead",
+        str(data["ahead"]),
+    )
+
+    table.add_row(
+        "Behind",
+        str(data["behind"]),
+    )
 
     console.print(table)
 
-    if ahead == 0 and behind == 0:
-        console.print(
-            "\n[bold green]✓ Branch is synchronized.[/bold green]"
+    state = data["state"]
+
+    console.print()
+
+    if state == "synced":
+        success(
+            "Branch is synchronized."
         )
 
-    elif ahead > 0 and behind == 0:
-        console.print(
-            f"\n[yellow]Local branch has {ahead} unpushed commit(s).[/yellow]"
+    elif state == "ahead":
+        warning(
+            f'Local branch has {data["ahead"]} unpushed commit(s).'
         )
 
-    elif behind > 0 and ahead == 0:
-        console.print(
-            f"\n[yellow]Local branch is behind by {behind} commit(s).[/yellow]"
+    elif state == "behind":
+        warning(
+            f'Local branch is behind by {data["behind"]} commit(s).'
+        )
+
+    elif state == "diverged":
+        warning(
+            "Local and remote branches have diverged."
         )
 
     else:
-        console.print(
-            "\n[yellow]Local and remote branches have diverged.[/yellow]"
+        warning(
+            "Unable to determine synchronization state."
         )
+
 
 @git_app.command("health")
 def git_health():
@@ -646,18 +459,15 @@ def git_health():
 
     path = require_git_repository()
 
-    checks = collect_git_health(path)
-
-    score = round(
-        (
-            sum(1 for check in checks if check["ok"])
-            / len(checks)
-        )
-        * 100
+    data = get_git_health(
+        path
     )
 
-    console.print(
-        f"\n[bold cyan]Git Health — {path.name}[/bold cyan]\n"
+    score = data["score"]
+
+    section_title(
+        "🌿 Git Health",
+        path.name,
     )
 
     console.print(
@@ -669,21 +479,29 @@ def git_health():
         title="Repository Checks"
     )
 
-    table.add_column("Check", style="bold")
-    table.add_column("Status", justify="center")
-    table.add_column("Details", style="cyan")
+    table.add_column(
+        "Check",
+    )
 
-    for check in checks:
-        status = status_badge(
-            "healthy"
-            if check["ok"]
-            else "attention"
-        )
+    table.add_column(
+        "Status",
+        justify="center",
+    )
 
+    table.add_column(
+        "Details",
+        style="cyan",
+    )
+
+    for check in data["checks"]:
         table.add_row(
             check["name"],
-            status,
+            status_badge(
+                "healthy"
+                if check["ok"]
+                else "attention"
+            ),
             check["details"],
         )
 
-    console.print(table)        
+    console.print(table)

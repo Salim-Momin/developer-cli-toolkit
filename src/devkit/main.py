@@ -9,6 +9,7 @@ from devkit.commands.json_tools import json_app
 from devkit.commands.yaml_tools import yaml_app
 from devkit.commands.convert import convert_app
 from devkit.commands.api import api_app
+from devkit.commands.config import config_app
 
 app = typer.Typer(
     name="devkit",
@@ -46,6 +47,11 @@ app.add_typer(
 app.add_typer(
     api_app,
     name="api",
+)
+
+app.add_typer(
+    config_app,
+    name="config",
 )
 
 app.command("search")(search_text)

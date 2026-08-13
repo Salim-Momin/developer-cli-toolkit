@@ -1,0 +1,40 @@
+[project]
+
+ignore = [
+    ".git",
+    ".venv",
+    "venv",
+    "env",
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    "node_modules",
+    ".next",
+    ".nuxt",
+    ".cache",
+    "coverage",
+    "htmlcov",
+    "dist",
+    "build",
+    "target"
+]
+
+
+[tree]
+
+depth = 2
+show_files = true
+show_hidden = false
+
+
+[search]
+
+limit = 20
+case_sensitive = false
+
+
+[api]
+
+timeout = 10.0
+history_limit = 100

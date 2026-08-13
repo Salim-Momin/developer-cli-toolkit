@@ -395,3 +395,119 @@ def analyze_project(
             recommendations
         ),
     }
+
+def list_project_tree(
+    path: Path,
+    current_depth: int = 0,
+    max_depth: int = 3,
+    show_files: bool = True,
+    show_hidden: bool = False,
+    extension_filter: str | None = None,
+) -> dict:
+    """Return project tree data as plain Python structures."""
+
+    node = {
+        "name": path.name,
+        "type": "directory",
+        "children": [],
+    }
+
+    if current_depth >= max_depth:
+        return node
+
+    try:
+        items = sorted(
+            path.iterdir(),
+            key=lambda item: (
+                item.is_file(),
+                item.name.lower(),
+            ),
+        )
+
+    except (
+        PermissionError,
+        OSError,
+    ):
+        return node
+
+    normalized_extension = None
+
+    if extension_filter:
+        normalized_extension = (
+            extension_filter.lower()
+        )
+
+        if not normalized_extension.startswith("."):
+            normalized_extension = (
+                f".{normalized_extension}"
+            )
+
+    for item in items:
+        if item.name in IGNORED_DIRECTORIES:
+            continue
+
+        if (
+            not show_hidden
+            and item.name.startswith(".")
+        ):
+            continue
+
+        if item.is_dir():
+            child = list_project_tree(
+                path=item,
+                current_depth=current_depth + 1,
+                max_depth=max_depth,
+                show_files=show_files,
+                show_hidden=show_hidden,
+                extension_filter=extension_filter,
+            )
+
+            node["children"].append(
+                child
+            )
+
+        elif show_files:
+            if (
+                normalized_extension
+                and item.suffix.lower()
+                != normalized_extension
+            ):
+                continue
+
+            node["children"].append(
+                {
+                    "name": item.name,
+                    "type": "file",
+                    "children": [],
+                }
+            )
+
+    return node    
+
+def count_tree_nodes(
+    node: dict,
+) -> tuple[int, int]:
+    """Count files and directories in tree data."""
+
+    files = 0
+    directories = 0
+
+    if node["type"] == "file":
+        return 1, 0
+
+    directories += 1
+
+    for child in node.get(
+        "children",
+        [],
+    ):
+        child_files, child_directories = (
+            count_tree_nodes(
+                child
+            )
+        )
+
+        files += child_files
+        directories += child_directories
+
+    return files, directories

@@ -3,6 +3,13 @@ from pathlib import Path
 from collections import Counter
 from rich.tree import Tree
 
+from devkit.services.project_service import (
+    analyze_project,
+    count_tree_nodes,
+    format_size,
+    list_project_tree,
+)
+
 import typer
 from rich.console import Console
 from rich.table import Table
@@ -367,76 +374,6 @@ def build_score_bar(score: int, width: int = 20) -> str:
 
     return f"[green]{'█' * filled}[/green][dim]{'░' * empty}[/dim]"
 
-def build_project_tree(
-    path: Path,
-    tree: Tree,
-    current_depth: int = 0,
-    max_depth: int = 3,
-    show_files: bool = True,
-    show_hidden: bool = False,
-    extension_filter: str | None = None,
-) -> tuple[int, int]:
-    """Recursively build a Rich project tree."""
-
-    if current_depth >= max_depth:
-        return 0, 0
-
-    file_count = 0
-    directory_count = 0
-
-    try:
-        items = sorted(
-            path.iterdir(),
-            key=lambda item: (
-                item.is_file(),
-                item.name.lower(),
-            ),
-        )
-    except (PermissionError, OSError):
-        return 0, 0
-
-    for item in items:
-        if item.name in IGNORED_DIRECTORIES:
-            continue
-
-        if not show_hidden and item.name.startswith("."):
-            continue
-
-        if item.is_dir():
-            directory_count += 1
-
-            branch = tree.add(
-                f"[bold cyan]📁 {item.name}[/bold cyan]"
-            )
-
-            child_files, child_dirs = build_project_tree(
-                path=item,
-                tree=branch,
-                current_depth=current_depth + 1,
-                max_depth=max_depth,
-                show_files=show_files,
-                show_hidden=show_hidden,
-                extension_filter=extension_filter,
-            )
-
-            file_count += child_files
-            directory_count += child_dirs
-
-        elif show_files:
-            if extension_filter:
-                normalized_extension = extension_filter.lower()
-
-                if not normalized_extension.startswith("."):
-                    normalized_extension = f".{normalized_extension}"
-
-                if item.suffix.lower() != normalized_extension:
-                    continue
-
-            file_count += 1
-            tree.add(f"📄 {item.name}")
-
-    return file_count, directory_count
-
 @project_app.command("info")
 def project_info():
     """Display information about the current project."""
@@ -654,6 +591,31 @@ def project_health():
             "No major project health issues detected."
         )
 
+def render_tree_node(
+    node: dict,
+    rich_tree: Tree,
+) -> None:
+    """Render service tree data with Rich."""
+
+    for child in node.get(
+        "children",
+        [],
+    ):
+        if child["type"] == "directory":
+            branch = rich_tree.add(
+                f"[bold cyan]📁 {child['name']}[/bold cyan]"
+            )
+
+            render_tree_node(
+                child,
+                branch,
+            )
+
+        else:
+            rich_tree.add(
+                f"📄 {child['name']}"
+            )
+
 @project_app.command("tree")
 def project_tree(
     depth: int = typer.Option(
@@ -685,24 +647,45 @@ def project_tree(
 
     project_path = Path.cwd()
 
-    root = Tree(
-        f"[bold green]📦 {project_path.name}[/bold green]"
+    section_title(
+        "🌳 Project Tree",
+        project_path.name,
     )
 
-    file_count, directory_count = build_project_tree(
+    tree_data = list_project_tree(
         path=project_path,
-        tree=root,
         max_depth=depth,
         show_files=files,
         show_hidden=hidden,
         extension_filter=extension,
     )
 
-    console.print()
+    root = Tree(
+        f"[bold green]📦 {project_path.name}[/bold green]"
+    )
+
+    render_tree_node(
+        tree_data,
+        root,
+    )
+
     console.print(root)
 
+    file_count, directory_count = (
+        count_tree_nodes(
+            tree_data
+        )
+    )
+
+    directory_count = max(
+        0,
+        directory_count - 1,
+    )
+
     console.print(
-        f"\n[dim]Summary:[/dim] "
-        f"[bold]{directory_count}[/bold] directories, "
-        f"[bold]{file_count}[/bold] files"
+        f"\n[devkit.secondary]"
+        f"Summary: "
+        f"{directory_count} directories, "
+        f"{file_count} files"
+        f"[/devkit.secondary]"
     )

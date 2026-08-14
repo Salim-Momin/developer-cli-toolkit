@@ -201,10 +201,10 @@ def run_search_menu() -> None:
     search_text(
         query=query,
         extension=extension or None,
-        case_sensitive=False,
+        case_sensitive=None,
         regex=use_regex,
         filename=mode == "2",
-        limit=50,
+        limit=None,
     )
 
 
@@ -831,9 +831,9 @@ def run_interactive_menu() -> None:
             console.clear()
 
             project_tree(
-                depth=3,
-                files=True,
-                hidden=False,
+                depth=None,
+                files=None,
+                hidden=None,
                 extension=None,
             )
 

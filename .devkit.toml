@@ -17,7 +17,8 @@ ignore = [
     "htmlcov",
     "dist",
     "build",
-    "target"
+    "target",
+    "temp-ignore"
 ]
 
 
@@ -30,11 +31,11 @@ show_hidden = false
 
 [search]
 
-limit = 20
+limit = 5
 case_sensitive = false
 
 
 [api]
 
-timeout = 10.0
+timeout = 15.0
 history_limit = 100

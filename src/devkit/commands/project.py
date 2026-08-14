@@ -28,6 +28,8 @@ from devkit.terminal.components import (
     success,
 )
 
+from devkit.core.config import get_tree_defaults
+
 project_app = typer.Typer(
     help="Inspect and analyze development projects."
 )
@@ -618,23 +620,23 @@ def render_tree_node(
 
 @project_app.command("tree")
 def project_tree(
-    depth: int = typer.Option(
-        3,
+    depth: int | None = typer.Option(
+        None,
         "--depth",
         "-d",
         help="Maximum tree depth.",
         min=1,
         max=10,
     ),
-    files: bool = typer.Option(
-        True,
+    files: bool | None = typer.Option(
+        None,
         "--files/--no-files",
         help="Show or hide files.",
     ),
-    hidden: bool = typer.Option(
-        False,
-        "--hidden",
-        help="Include hidden files and folders.",
+    hidden: bool | None = typer.Option(
+        None,
+        "--hidden/--no-hidden",
+        help="Show or hide hidden files.",
     ),
     extension: str | None = typer.Option(
         None,
@@ -647,19 +649,59 @@ def project_tree(
 
     project_path = Path.cwd()
 
+    # Load defaults from .devkit.toml
+    defaults = get_tree_defaults(
+        project_path
+    )
+
+    resolved_depth = (
+        depth
+        if depth is not None
+        else int(
+            defaults.get(
+                "depth",
+                3,
+            )
+        )
+    )
+
+    resolved_files = (
+        files
+        if files is not None
+        else bool(
+            defaults.get(
+                "show_files",
+                True,
+            )
+        )
+    )
+
+    resolved_hidden = (
+        hidden
+        if hidden is not None
+        else bool(
+            defaults.get(
+                "show_hidden",
+                False,
+            )
+        )
+    )
+
     section_title(
         "🌳 Project Tree",
         project_path.name,
     )
 
+    # Generate plain tree data using Project Service
     tree_data = list_project_tree(
         path=project_path,
-        max_depth=depth,
-        show_files=files,
-        show_hidden=hidden,
+        max_depth=resolved_depth,
+        show_files=resolved_files,
+        show_hidden=resolved_hidden,
         extension_filter=extension,
     )
 
+    # Render it using Rich
     root = Tree(
         f"[bold green]📦 {project_path.name}[/bold green]"
     )
@@ -671,12 +713,12 @@ def project_tree(
 
     console.print(root)
 
-    file_count, directory_count = (
-        count_tree_nodes(
-            tree_data
-        )
+    # Calculate summary
+    file_count, directory_count = count_tree_nodes(
+        tree_data
     )
 
+    # Root project folder shouldn't count as child directory
     directory_count = max(
         0,
         directory_count - 1,

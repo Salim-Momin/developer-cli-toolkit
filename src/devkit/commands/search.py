@@ -15,6 +15,7 @@ from devkit.terminal.components import (
 )
 from devkit.terminal.tables import create_table
 from devkit.terminal.theme import console
+from devkit.core.config import get_search_defaults
 
 
 def highlight_match(
@@ -71,8 +72,8 @@ def search_text(
         "-e",
         help="Only search files with this extension.",
     ),
-    case_sensitive: bool = typer.Option(
-        False,
+    case_sensitive: bool | None = typer.Option(
+        None,
         "--case-sensitive",
         "-c",
         help="Enable case-sensitive searching.",
@@ -89,8 +90,8 @@ def search_text(
         "-f",
         help="Search filenames instead of file contents.",
     ),
-    limit: int = typer.Option(
-        50,
+    limit: int | None = typer.Option(
+        None,
         "--limit",
         "-l",
         min=1,
@@ -101,6 +102,32 @@ def search_text(
     """Search project source code and filenames."""
 
     project_path = Path.cwd()
+
+    defaults = get_search_defaults(
+        project_path
+    )
+
+    resolved_case_sensitive = (
+        case_sensitive
+        if case_sensitive is not None
+        else bool(
+            defaults.get(
+                "case_sensitive",
+                False,
+            )
+        )
+    )
+
+    resolved_limit = (
+        limit
+        if limit is not None
+        else int(
+            defaults.get(
+                "limit",
+                50,
+            )
+        )
+    )
 
     section_title(
         "🔎 Smart Search",
@@ -118,7 +145,7 @@ def search_text(
             results = search_filenames(
                 root=project_path,
                 query=query,
-                case_sensitive=case_sensitive,
+                case_sensitive=resolved_case_sensitive,
             )
 
         if not results:
@@ -141,7 +168,7 @@ def search_text(
             style="cyan",
         )
 
-        for result in results[:limit]:
+        for result in results[:resolved_limit]:
             try:
                 relative_path = result.relative_to(
                     project_path
@@ -156,10 +183,10 @@ def search_text(
         console.print()
         console.print(table)
 
-        if len(results) > limit:
+        if len(results) > resolved_limit:
             console.print(
                 f"\n[devkit.secondary]"
-                f"Showing {limit} of "
+                f"Showing {resolved_limit} of "
                 f"{len(results)} matches."
                 f"[/devkit.secondary]"
             )
@@ -178,7 +205,7 @@ def search_text(
                 root=project_path,
                 query=query,
                 extension=extension,
-                case_sensitive=case_sensitive,
+                case_sensitive=resolved_case_sensitive,
                 regex=regex,
             )
 
@@ -218,7 +245,7 @@ def search_text(
         "Match",
     )
 
-    for result in results[:limit]:
+    for result in results[:resolved_limit]:
         file_path = result["file"]
 
         try:
@@ -242,7 +269,7 @@ def search_text(
             display_text = highlight_match(
                 text=text,
                 query=query,
-                case_sensitive=case_sensitive,
+                case_sensitive=resolved_case_sensitive,
             )
 
         table.add_row(
@@ -254,10 +281,10 @@ def search_text(
     console.print()
     console.print(table)
 
-    if len(results) > limit:
+    if len(results) > resolved_limit:
         console.print(
             f"\n[devkit.secondary]"
-            f"Showing {limit} of "
+            f"Showing {resolved_limit} of "
             f"{len(results)} matches."
             f"[/devkit.secondary]"
         )

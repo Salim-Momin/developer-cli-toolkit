@@ -1,36 +1,29 @@
 import re
 from pathlib import Path
+from devkit.core.config import get_ignored_directories
 
-
-IGNORED_DIRECTORIES = {
-    ".git",
-    ".venv",
-    "venv",
-    "env",
-    "__pycache__",
-    ".pytest_cache",
-    ".mypy_cache",
-    ".ruff_cache",
-    "node_modules",
-    ".next",
-    ".nuxt",
-    ".cache",
-    "coverage",
-    "htmlcov",
-    "dist",
-    "build",
-    "target",
-}
-
-
-def should_ignore(path: Path) -> bool:
+def should_ignore(
+    path: Path,
+    root: Path,
+) -> bool:
     """Return True when path belongs to an ignored directory."""
 
-    return any(
-        part in IGNORED_DIRECTORIES
-        for part in path.parts
+    ignored = get_ignored_directories(
+        root
     )
 
+    try:
+        relative = path.relative_to(
+            root
+        )
+
+    except ValueError:
+        relative = path
+
+    return any(
+        part in ignored
+        for part in relative.parts
+    )
 
 def normalize_extension(
     extension: str | None,
@@ -104,7 +97,10 @@ def search_project(
     )
 
     for file_path in root.rglob("*"):
-        if should_ignore(file_path):
+        if should_ignore(
+            file_path,
+            root,
+        ):
             continue
 
         if not file_path.is_file():
@@ -182,7 +178,10 @@ def search_filenames(
     )
 
     for path in root.rglob("*"):
-        if should_ignore(path):
+        if should_ignore(
+            path,
+            root,
+        ):
             continue
 
         if not path.is_file():

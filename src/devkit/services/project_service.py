@@ -1,26 +1,6 @@
 from collections import Counter
 from pathlib import Path
-
-
-IGNORED_DIRECTORIES = {
-    ".git",
-    ".venv",
-    "venv",
-    "env",
-    "__pycache__",
-    ".pytest_cache",
-    ".mypy_cache",
-    ".ruff_cache",
-    "node_modules",
-    ".next",
-    ".nuxt",
-    ".cache",
-    "coverage",
-    "htmlcov",
-    "dist",
-    "build",
-    "target",
-}
+from devkit.core.config import get_ignored_directories
 
 
 LANGUAGE_MAP = {
@@ -123,8 +103,10 @@ def count_project_items(
     directory_count = 0
 
     for item in path.rglob("*"):
+        ignored = get_ignored(path)
+
         if any(
-            part in IGNORED_DIRECTORIES
+            part in ignored
             for part in item.parts
         ):
             continue
@@ -143,8 +125,10 @@ def get_file_extension_stats(
     extensions = Counter()
 
     for item in path.rglob("*"):
+        ignored = get_ignored(path)
+
         if any(
-            part in IGNORED_DIRECTORIES
+            part in ignored
             for part in item.parts
         ):
             continue
@@ -195,8 +179,10 @@ def get_project_size(
     total_size = 0
 
     for item in path.rglob("*"):
+        ignored = get_ignored(path)
+
         if any(
-            part in IGNORED_DIRECTORIES
+            part in ignored
             for part in item.parts
         ):
             continue
@@ -208,6 +194,13 @@ def get_project_size(
                 pass
 
     return total_size
+
+def get_ignored(path: Path) -> set[str]:
+    """Return configured ignored directories."""
+
+    return get_ignored_directories(
+        path
+    )
 
 def format_size(
     size_bytes: int,
@@ -443,7 +436,8 @@ def list_project_tree(
             )
 
     for item in items:
-        if item.name in IGNORED_DIRECTORIES:
+        ignored = get_ignored(path)
+        if item.name in ignored:
             continue
 
         if (

@@ -22,7 +22,7 @@ from devkit.terminal.tables import (
 )
 
 from devkit.terminal.theme import console
-
+from devkit.core.config import get_api_defaults
 
 api_app = typer.Typer(
     help="Send and inspect HTTP API requests."
@@ -228,8 +228,8 @@ def api_get(
         "-p",
         help="Query parameter in key=value format.",
     ),
-    timeout: float = typer.Option(
-        10.0,
+    timeout: float | None = typer.Option(
+        None,
         "--timeout",
         "-t",
         min=0.1,
@@ -249,12 +249,25 @@ def api_get(
 ):
     """Send an HTTP GET request."""
 
+    defaults = get_api_defaults()
+
+    resolved_timeout = (
+        timeout
+        if timeout is not None
+        else float(
+            defaults.get(
+               "timeout",
+                10.0,
+            )
+        )
+    )
+
     execute_request(
         method="GET",
         url=url,
         header=header,
         json_body=None,
-        timeout=timeout,
+        timeout=resolved_timeout,
         param=param,
         save=save,
         show_headers=show_headers,
@@ -296,8 +309,8 @@ def api_post(
         "-p",
         help="Query parameter in key=value format.",
     ),
-    timeout: float = typer.Option(
-        10.0,
+    timeout: float | None = typer.Option(
+        None,
         "--timeout",
         "-t",
         min=0.1,
@@ -361,8 +374,8 @@ def api_put(
         "--param",
         "-p",
     ),
-    timeout: float = typer.Option(
-        10.0,
+    timeout: float | None = typer.Option(
+        None,
         "--timeout",
         "-t",
         min=0.1,
@@ -424,8 +437,8 @@ def api_patch(
         "--param",
         "-p",
     ),
-    timeout: float = typer.Option(
-        10.0,
+    timeout: float | None = typer.Option(
+        None,
         "--timeout",
         "-t",
         min=0.1,
@@ -473,8 +486,8 @@ def api_delete(
         "--param",
         "-p",
     ),
-    timeout: float = typer.Option(
-        10.0,
+    timeout: float | None = typer.Option(
+        None,
         "--timeout",
         "-t",
         min=0.1,

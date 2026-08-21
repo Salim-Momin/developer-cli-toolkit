@@ -1,6 +1,9 @@
 import re
 from pathlib import Path
 from devkit.core.config import get_ignored_directories
+from devkit.core.logging import get_logger
+
+logger = get_logger()
 
 def should_ignore(
     path: Path,
@@ -125,7 +128,14 @@ def search_project(
         except (
             PermissionError,
             OSError,
-        ):
+        ) as exc:
+
+            logger.debug(
+                "Could not read file %s: %s",
+                file_path,
+                exc,
+            )
+
             continue
 
         for line_number, line in enumerate(

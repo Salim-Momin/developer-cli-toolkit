@@ -1,7 +1,9 @@
 from collections import Counter
 from pathlib import Path
 from devkit.core.config import get_ignored_directories
+from devkit.core.logging import get_logger
 
+logger = get_logger()
 
 LANGUAGE_MAP = {
     ".py": "Python",
@@ -190,8 +192,12 @@ def get_project_size(
         if item.is_file():
             try:
                 total_size += item.stat().st_size
-            except OSError:
-                pass
+            except OSError as exc:
+                logger.debug(
+                    "Could not inspect %s: %s",
+                    item,
+                    exc,
+                )
 
     return total_size
 

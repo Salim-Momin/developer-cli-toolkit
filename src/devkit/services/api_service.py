@@ -2,7 +2,8 @@ import json
 import time
 from datetime import datetime
 from pathlib import Path
-
+from devkit.core.exceptions import APIError
+from devkit.core.logging import get_logger
 import httpx
 
 
@@ -12,6 +13,7 @@ HISTORY_FILE = (
     / "api_history.json"
 )
 
+logger = get_logger()
 
 def parse_headers(
     headers: list[str] | None,
@@ -150,12 +152,24 @@ def send_request(
         )
 
     except httpx.TimeoutException as exc:
-        raise RuntimeError(
+        logger.exception(
+            "API request timed out: %s %s",
+            method,
+            url,
+        )
+
+        raise APIError(
             "Request timed out."
         ) from exc
 
     except httpx.RequestError as exc:
-        raise RuntimeError(
+        logger.exception(
+            "API request failed: %s %s",
+            method,
+            url,
+        )
+
+        raise APIError(
             f"Request failed: {exc}"
         ) from exc
 

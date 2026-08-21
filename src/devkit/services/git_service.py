@@ -1,5 +1,8 @@
 import subprocess
 from pathlib import Path
+from devkit.core.logging import get_logger
+
+logger = get_logger()
 
 def run_git_command(
     args: list[str],
@@ -18,6 +21,15 @@ def run_git_command(
         )
 
         if result.returncode != 0:
+            logger.debug(
+                "Git command failed: git %s | stderr=%s",
+                " ".join(args),
+                result.stderr.strip(),
+            )
+
+            return None
+
+        if result.returncode != 0:
             return None
 
         return result.stdout.strip()
@@ -26,7 +38,12 @@ def run_git_command(
         FileNotFoundError,
         subprocess.TimeoutExpired,
         OSError,
-    ):
+    ) as exc:
+        logger.exception(
+            "Git command execution failed: git %s",
+            " ".join(args),
+        )
+
         return None
 
 def is_git_repository(

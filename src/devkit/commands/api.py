@@ -23,6 +23,7 @@ from devkit.terminal.tables import (
 
 from devkit.terminal.theme import console
 from devkit.core.config import get_api_defaults
+from devkit.core.exceptions import DevKitError
 
 api_app = typer.Typer(
     help="Send and inspect HTTP API requests."
@@ -174,7 +175,7 @@ def execute_request(
 
     except (
         ValueError,
-        RuntimeError,
+        DevKitError,
     ) as exc:
         error(
             str(exc)

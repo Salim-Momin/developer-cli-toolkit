@@ -187,3 +187,21 @@ def loading(
         spinner="dots",
     ):
         yield    
+
+def debug_error(
+    message: str,
+    exception: Exception | None = None,
+    debug: bool = False,
+) -> None:
+    """Display a clean error and optional debug details."""
+
+    error(
+        message
+    )
+
+    if debug and exception:
+        console.print()
+
+        console.print_exception(
+            show_locals=False
+        )        

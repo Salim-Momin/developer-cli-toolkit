@@ -24,9 +24,7 @@ def setup_logging(
         exist_ok=True,
     )
 
-    logger = logging.getLogger(
-        "devkit"
-    )
+    logger = logging.getLogger("devkit")
 
     logger.setLevel(
         logging.DEBUG
@@ -34,6 +32,7 @@ def setup_logging(
         else logging.INFO
     )
 
+    # Don't add handlers twice
     if logger.handlers:
         return logger
 
@@ -61,8 +60,11 @@ def setup_logging(
         file_handler
     )
 
-    return logger
+    logger.info(
+        "========== DevKit Started =========="
+    )
 
+    return logger
 
 def get_logger() -> logging.Logger:
     """Return the DevKit logger."""

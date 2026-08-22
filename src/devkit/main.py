@@ -10,7 +10,8 @@ from devkit.commands.yaml_tools import yaml_app
 from devkit.commands.convert import convert_app
 from devkit.commands.api import api_app
 from devkit.commands.config import config_app
-from devkit.core.logging import setup_logging
+from devkit.core.logging import setup_logging, get_logger
+from devkit.commands.logs import logs_app
 
 app = typer.Typer(
     name="devkit",
@@ -55,6 +56,11 @@ app.add_typer(
     name="config",
 )
 
+app.add_typer(
+    logs_app,
+    name="logs"
+)
+
 app.command("search")(search_text)
 app.command("doctor")(doctor)
 
@@ -71,6 +77,17 @@ def main(
 
     setup_logging(
         debug=debug
+    )
+
+    logger = get_logger()
+
+    command = " ".join(
+        ["devkit"] + ctx.args
+    )
+
+    logger.info(
+        "Executing command: %s",
+        command,
     )
 
     ctx.ensure_object(

@@ -18,9 +18,7 @@ def doctor():
         "Inspect installed developer tools and environment health.",
     )
 
-    with loading(
-        "Checking development environment..."
-    ):
+    with loading("Checking development environment..."):
         data = analyze_environment()
 
     score = data["score"]
@@ -28,18 +26,13 @@ def doctor():
     diagnostics = data["diagnostics"]
     recommendations = data["recommendations"]
 
-    console.print(
-        f"{score_bar(score)} "
-        f"[bold]{score}/100[/bold]\n"
-    )
+    console.print(f"{score_bar(score)} " f"[bold]{score}/100[/bold]\n")
 
     # -----------------------------------------------------
     # Development Tools
     # -----------------------------------------------------
 
-    tools_table = create_table(
-        title="Development Environment"
-    )
+    tools_table = create_table(title="Development Environment")
 
     tools_table.add_column(
         "Tool",
@@ -64,26 +57,18 @@ def doctor():
     for tool in tools:
         tools_table.add_row(
             tool["name"],
-            status_badge(
-                "installed"
-                if tool["installed"]
-                else "missing"
-            ),
+            status_badge("installed" if tool["installed"] else "missing"),
             tool["version"],
             tool["path"],
         )
 
-    console.print(
-        tools_table
-    )
+    console.print(tools_table)
 
     # -----------------------------------------------------
     # Diagnostics
     # -----------------------------------------------------
 
-    diagnostics_table = create_table(
-        title="Environment Diagnostics"
-    )
+    diagnostics_table = create_table(title="Environment Diagnostics")
 
     diagnostics_table.add_column(
         "Check",
@@ -103,38 +88,24 @@ def doctor():
     for diagnostic in diagnostics:
         diagnostics_table.add_row(
             diagnostic["check"],
-            status_badge(
-                "healthy"
-                if diagnostic["ok"]
-                else "attention"
-            ),
+            status_badge("healthy" if diagnostic["ok"] else "attention"),
             diagnostic["details"],
         )
 
     console.print()
-    console.print(
-        diagnostics_table
-    )
+    console.print(diagnostics_table)
 
     # -----------------------------------------------------
     # Recommendations
     # -----------------------------------------------------
 
     if recommendations:
-        console.print(
-            "\n[devkit.warning]"
-            "Recommendations"
-            "[/devkit.warning]"
-        )
+        console.print("\n[devkit.warning]" "Recommendations" "[/devkit.warning]")
 
         for recommendation in recommendations:
-            console.print(
-                f"  • {recommendation}"
-            )
+            console.print(f"  • {recommendation}")
 
     else:
         console.print()
 
-        success(
-            "Development environment looks healthy."
-        )
+        success("Development environment looks healthy.")

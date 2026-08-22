@@ -12,10 +12,8 @@ from devkit.terminal.components import (
 )
 from devkit.terminal.theme import console
 
+yaml_app = typer.Typer(help="Validate, format and inspect YAML files.")
 
-yaml_app = typer.Typer(
-    help="Validate, format and inspect YAML files."
-)
 
 def load_yaml_file(path: Path):
     """Safely load and parse a YAML file."""
@@ -29,9 +27,7 @@ def load_yaml_file(path: Path):
         raise typer.Exit(code=1)
 
     try:
-        content = path.read_text(
-            encoding="utf-8-sig"
-        )
+        content = path.read_text(encoding="utf-8-sig")
 
     except (PermissionError, OSError) as exc:
         error(f"Could not read file: {exc}")
@@ -43,11 +39,10 @@ def load_yaml_file(path: Path):
     except yaml.YAMLError as exc:
         error("Invalid YAML.")
 
-        console.print(
-            f"[devkit.secondary]{exc}[/devkit.secondary]"
-        )
+        console.print(f"[devkit.secondary]{exc}[/devkit.secondary]")
 
         raise typer.Exit(code=1)
+
 
 def describe_yaml_value(value) -> str:
     """Return a readable YAML value type."""
@@ -75,6 +70,7 @@ def describe_yaml_value(value) -> str:
 
     return type(value).__name__
 
+
 @yaml_app.command("validate")
 def yaml_validate(
     file: Path = typer.Argument(
@@ -91,9 +87,8 @@ def yaml_validate(
 
     load_yaml_file(file)
 
-    success(
-        "YAML is valid."
-    )    
+    success("YAML is valid.")
+
 
 @yaml_app.command("format")
 def yaml_format(
@@ -127,14 +122,10 @@ def yaml_format(
             )
 
         except (PermissionError, OSError) as exc:
-            error(
-                f"Could not write file: {exc}"
-            )
+            error(f"Could not write file: {exc}")
             raise typer.Exit(code=1)
 
-        success(
-            f"Formatted {file}."
-        )
+        success(f"Formatted {file}.")
 
         return
 
@@ -150,7 +141,8 @@ def yaml_format(
         word_wrap=True,
     )
 
-    console.print(syntax)    
+    console.print(syntax)
+
 
 @yaml_app.command("inspect")
 def yaml_inspect(
@@ -176,9 +168,7 @@ def yaml_inspect(
     )
 
     if isinstance(data, dict):
-        table = Table(
-            title="Top-Level Properties"
-        )
+        table = Table(title="Top-Level Properties")
 
         table.add_column(
             "Key",
@@ -195,9 +185,7 @@ def yaml_inspect(
         )
 
         for key, value in data.items():
-            value_type = describe_yaml_value(
-                value
-            )
+            value_type = describe_yaml_value(value)
 
             if isinstance(value, dict):
                 summary = f"{len(value)} properties"
@@ -206,10 +194,7 @@ def yaml_inspect(
                 summary = f"{len(value)} items"
 
             elif isinstance(value, str):
-                summary = (
-                    value[:40]
-                    + ("..." if len(value) > 40 else "")
-                )
+                summary = value[:40] + ("..." if len(value) > 40 else "")
 
             else:
                 summary = str(value)
@@ -224,14 +209,8 @@ def yaml_inspect(
 
     elif isinstance(data, list):
         console.print(
-            f"[devkit.info]"
-            f"Array contains {len(data)} item(s)."
-            f"[/devkit.info]"
+            f"[devkit.info]" f"Array contains {len(data)} item(s)." f"[/devkit.info]"
         )
 
     else:
-        console.print(
-            f"[devkit.info]"
-            f"Value: {data}"
-            f"[/devkit.info]"
-        )    
+        console.print(f"[devkit.info]" f"Value: {data}" f"[/devkit.info]")

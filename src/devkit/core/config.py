@@ -53,19 +53,13 @@ def get_config_path(
 ) -> Path | None:
     """Search current directory and parents for .devkit.toml."""
 
-    current = (
-        start_path
-        or Path.cwd()
-    ).resolve()
+    current = (start_path or Path.cwd()).resolve()
 
     for directory in [
         current,
         *current.parents,
     ]:
-        candidate = (
-            directory
-            / CONFIG_FILENAME
-        )
+        candidate = directory / CONFIG_FILENAME
 
         if candidate.exists():
             return candidate
@@ -79,9 +73,7 @@ def deep_merge(
 ) -> dict:
     """Recursively merge configuration dictionaries."""
 
-    result = deepcopy(
-        base
-    )
+    result = deepcopy(base)
 
     for key, value in override.items():
         if (
@@ -111,51 +103,38 @@ def load_config(
 ) -> dict:
     """Load DevKit configuration with defaults."""
 
-    config = deepcopy(
-        DEFAULT_CONFIG
-    )
+    config = deepcopy(DEFAULT_CONFIG)
 
-    config_path = get_config_path(
-        start_path
-    )
+    config_path = get_config_path(start_path)
 
     if not config_path:
         return config
 
     if tomllib is None:
-        raise RuntimeError(
-            "TOML configuration requires Python 3.11 or newer."
-        )
+        raise RuntimeError("TOML configuration requires Python 3.11 or newer.")
 
     try:
-        with config_path.open(
-            "rb"
-        ) as file:
-            user_config = tomllib.load(
-                file
-            )
+        with config_path.open("rb") as file:
+            user_config = tomllib.load(file)
 
     except (
         OSError,
         tomllib.TOMLDecodeError,
     ) as exc:
-        raise ValueError(
-            f"Could not read {config_path}: {exc}"
-        ) from exc
+        raise ValueError(f"Could not read {config_path}: {exc}") from exc
 
     return deep_merge(
         config,
         user_config,
     )
 
+
 def get_ignored_directories(
     start_path: Path | None = None,
 ) -> set[str]:
     """Return configured ignored directories."""
 
-    config = load_config(
-        start_path
-    )
+    config = load_config(start_path)
 
     values = config.get(
         "project",
@@ -165,10 +144,7 @@ def get_ignored_directories(
         [],
     )
 
-    return set(
-        str(value)
-        for value in values
-    )
+    return {str(value) for value in values}
 
 
 def get_tree_defaults(
@@ -176,9 +152,7 @@ def get_tree_defaults(
 ) -> dict:
     """Return default tree settings."""
 
-    config = load_config(
-        start_path
-    )
+    config = load_config(start_path)
 
     return config.get(
         "tree",
@@ -191,9 +165,7 @@ def get_search_defaults(
 ) -> dict:
     """Return default search settings."""
 
-    config = load_config(
-        start_path
-    )
+    config = load_config(start_path)
 
     return config.get(
         "search",
@@ -206,9 +178,7 @@ def get_api_defaults(
 ) -> dict:
     """Return default API settings."""
 
-    config = load_config(
-        start_path
-    )
+    config = load_config(start_path)
 
     return config.get(
         "api",

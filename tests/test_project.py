@@ -2,8 +2,8 @@ from pathlib import Path
 
 from devkit.services.project_service import (
     analyze_project,
-    list_project_tree,
     count_tree_nodes,
+    list_project_tree,
 )
 
 
@@ -17,9 +17,7 @@ def test_analyze_project(
         encoding="utf-8",
     )
 
-    result = analyze_project(
-        tmp_path
-    )
+    result = analyze_project(tmp_path)
 
     assert result is not None
 
@@ -34,28 +32,19 @@ def test_list_project_tree(
         encoding="utf-8",
     )
 
-    tree = list_project_tree(
-        tmp_path
-    )
+    tree = list_project_tree(tmp_path)
 
     assert tree is not None
+
 
 def test_count_tree_nodes():
 
     tree = {
         "name": "root",
         "type": "directory",
-        "children": [
-            {
-                "name": "file.py",
-                "type": "file",
-                "children": []
-            }
-        ]
+        "children": [{"name": "file.py", "type": "file", "children": []}],
     }
 
-    result = count_tree_nodes(
-        tree
-    )
+    result = count_tree_nodes(tree)
 
     assert result == (1, 1)

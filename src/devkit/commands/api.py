@@ -4,30 +4,25 @@ import httpx
 import typer
 from rich.syntax import Syntax
 
+from devkit.core.config import get_api_defaults
+from devkit.core.exceptions import DevKitError
 from devkit.services.api_service import (
     execute_api_request,
     get_request_history,
 )
-
 from devkit.terminal.components import (
     error,
     section_title,
     success,
     warning,
 )
-
 from devkit.terminal.tables import (
     create_key_value_table,
     create_table,
 )
-
 from devkit.terminal.theme import console
-from devkit.core.config import get_api_defaults
-from devkit.core.exceptions import DevKitError
 
-api_app = typer.Typer(
-    help="Send and inspect HTTP API requests."
-)
+api_app = typer.Typer(help="Send and inspect HTTP API requests.")
 
 
 def display_response(
@@ -38,11 +33,7 @@ def display_response(
     """Display an HTTP response in the terminal."""
 
     status_style = (
-        "green"
-        if response.is_success
-        else "yellow"
-        if response.is_redirect
-        else "red"
+        "green" if response.is_success else "yellow" if response.is_redirect else "red"
     )
 
     section_title(
@@ -50,9 +41,7 @@ def display_response(
         str(response.url),
     )
 
-    summary = create_key_value_table(
-        title="Request Summary"
-    )
+    summary = create_key_value_table(title="Request Summary")
 
     summary.add_row(
         "Status",
@@ -83,9 +72,7 @@ def display_response(
     console.print(summary)
 
     if show_headers:
-        header_table = create_table(
-            title="Response Headers"
-        )
+        header_table = create_table(title="Response Headers")
 
         header_table.add_column(
             "Header",
@@ -105,11 +92,7 @@ def display_response(
         console.print()
         console.print(header_table)
 
-    console.print(
-        "\n[devkit.secondary]"
-        "Response Body"
-        "[/devkit.secondary]\n"
-    )
+    console.print("\n[devkit.secondary]" "Response Body" "[/devkit.secondary]\n")
 
     content_type = response.headers.get(
         "content-type",
@@ -140,10 +123,7 @@ def display_response(
         except ValueError:
             pass
 
-    console.print(
-        response.text
-        or "[dim]<empty response>[/dim]"
-    )
+    console.print(response.text or "[dim]<empty response>[/dim]")
 
 
 def execute_request(
@@ -177,21 +157,13 @@ def execute_request(
         ValueError,
         DevKitError,
     ) as exc:
-        error(
-            str(exc)
-        )
+        error(str(exc))
 
-        raise typer.Exit(
-            code=1
-        )
+        raise typer.Exit(code=1)
 
-    response = result[
-        "response"
-    ]
+    response = result["response"]
 
-    duration_ms = result[
-        "duration_ms"
-    ]
+    duration_ms = result["duration_ms"]
 
     display_response(
         response=response,
@@ -199,16 +171,12 @@ def execute_request(
         show_headers=show_headers,
     )
 
-    saved_path = result[
-        "saved_path"
-    ]
+    saved_path = result["saved_path"]
 
     if saved_path:
         console.print()
 
-        success(
-            f"Response saved to {saved_path}."
-        )
+        success(f"Response saved to {saved_path}.")
 
 
 @api_app.command("get")
@@ -257,7 +225,7 @@ def api_get(
         if timeout is not None
         else float(
             defaults.get(
-               "timeout",
+                "timeout",
                 10.0,
             )
         )
@@ -531,9 +499,7 @@ def api_history(
 ):
     """Show recent API requests."""
 
-    history = get_request_history(
-        limit=limit
-    )
+    history = get_request_history(limit=limit)
 
     section_title(
         "🌐 API Request History",
@@ -541,14 +507,10 @@ def api_history(
     )
 
     if not history:
-        warning(
-            "No API history found."
-        )
+        warning("No API history found.")
         return
 
-    table = create_table(
-        title="Recent API Requests"
-    )
+    table = create_table(title="Recent API Requests")
 
     table.add_column(
         "Timestamp",
@@ -575,24 +537,16 @@ def api_history(
     )
 
     for item in history:
-        status = int(
-            item["status"]
-        )
+        status = int(item["status"])
 
         if 200 <= status < 300:
-            status_display = (
-                f"[green]{status}[/green]"
-            )
+            status_display = f"[green]{status}[/green]"
 
         elif 300 <= status < 400:
-            status_display = (
-                f"[yellow]{status}[/yellow]"
-            )
+            status_display = f"[yellow]{status}[/yellow]"
 
         else:
-            status_display = (
-                f"[red]{status}[/red]"
-            )
+            status_display = f"[red]{status}[/red]"
 
         table.add_row(
             item["time"],

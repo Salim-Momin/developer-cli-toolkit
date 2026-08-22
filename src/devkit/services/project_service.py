@@ -1,5 +1,6 @@
 from collections import Counter
 from pathlib import Path
+
 from devkit.core.config import get_ignored_directories
 from devkit.core.logging import get_logger
 
@@ -38,10 +39,7 @@ def detect_project_type(path: Path) -> str:
     ):
         return "Next.js"
 
-    if (
-        (path / "vite.config.js").exists()
-        or (path / "vite.config.ts").exists()
-    ):
+    if (path / "vite.config.js").exists() or (path / "vite.config.ts").exists():
         package_json = path / "package.json"
 
         if package_json.exists():
@@ -79,17 +77,18 @@ def detect_project_type(path: Path) -> str:
     if "django" in python_content:
         return "Django"
 
-    if (
-        (path / "pyproject.toml").exists()
-        or (path / "requirements.txt").exists()
-    ):
+    if (path / "pyproject.toml").exists() or (path / "requirements.txt").exists():
         return "Python"
 
     if (path / "package.json").exists():
-        content = (path / "package.json").read_text(
-            encoding="utf-8-sig",
-            errors="ignore",
-        ).lower()
+        content = (
+            (path / "package.json")
+            .read_text(
+                encoding="utf-8-sig",
+                errors="ignore",
+            )
+            .lower()
+        )
 
         if "react" in content:
             return "React"
@@ -97,6 +96,7 @@ def detect_project_type(path: Path) -> str:
         return "Node.js"
 
     return "Unknown"
+
 
 def count_project_items(
     path: Path,
@@ -107,10 +107,7 @@ def count_project_items(
     for item in path.rglob("*"):
         ignored = get_ignored(path)
 
-        if any(
-            part in ignored
-            for part in item.parts
-        ):
+        if any(part in ignored for part in item.parts):
             continue
 
         if item.is_file():
@@ -121,6 +118,7 @@ def count_project_items(
 
     return file_count, directory_count
 
+
 def get_file_extension_stats(
     path: Path,
 ) -> Counter:
@@ -129,20 +127,16 @@ def get_file_extension_stats(
     for item in path.rglob("*"):
         ignored = get_ignored(path)
 
-        if any(
-            part in ignored
-            for part in item.parts
-        ):
+        if any(part in ignored for part in item.parts):
             continue
 
         if item.is_file():
             extension = item.suffix.lower()
 
-            extensions[
-                extension or "[no extension]"
-            ] += 1
+            extensions[extension or "[no extension]"] += 1
 
     return extensions
+
 
 def get_language_stats(
     extension_stats: Counter,
@@ -150,30 +144,26 @@ def get_language_stats(
     languages = Counter()
 
     for extension, count in extension_stats.items():
-        language = LANGUAGE_MAP.get(
-            extension
-        )
+        language = LANGUAGE_MAP.get(extension)
 
         if language:
             languages[language] += count
 
     return languages
 
+
 def get_primary_language(
     path: Path,
 ) -> str:
-    extensions = get_file_extension_stats(
-        path
-    )
+    extensions = get_file_extension_stats(path)
 
-    languages = get_language_stats(
-        extensions
-    )
+    languages = get_language_stats(extensions)
 
     if not languages:
         return "Unknown"
 
     return languages.most_common(1)[0][0]
+
 
 def get_project_size(
     path: Path,
@@ -183,10 +173,7 @@ def get_project_size(
     for item in path.rglob("*"):
         ignored = get_ignored(path)
 
-        if any(
-            part in ignored
-            for part in item.parts
-        ):
+        if any(part in ignored for part in item.parts):
             continue
 
         if item.is_file():
@@ -201,12 +188,12 @@ def get_project_size(
 
     return total_size
 
+
 def get_ignored(path: Path) -> set[str]:
     """Return configured ignored directories."""
 
-    return get_ignored_directories(
-        path
-    )
+    return get_ignored_directories(path)
+
 
 def format_size(
     size_bytes: int,
@@ -229,6 +216,7 @@ def format_size(
 
     return f"{size:.2f} PB"
 
+
 def detect_project_health_items(
     path: Path,
 ) -> dict[str, bool]:
@@ -238,39 +226,23 @@ def detect_project_health_items(
         "__tests__",
     ]
 
-    has_tests = any(
-        (path / directory).exists()
-        for directory in test_directories
-    )
+    has_tests = any((path / directory).exists() for directory in test_directories)
 
     return {
-        "README": (
-            (path / "README.md").exists()
-            or (path / "README.rst").exists()
-        ),
-        ".gitignore": (
-            path / ".gitignore"
-        ).exists(),
+        "README": ((path / "README.md").exists() or (path / "README.rst").exists()),
+        ".gitignore": (path / ".gitignore").exists(),
         "Tests": has_tests,
         "Environment Template": (
-            (path / ".env.example").exists()
-            or (path / ".env.sample").exists()
+            (path / ".env.example").exists() or (path / ".env.sample").exists()
         ),
         "Docker": (
             (path / "Dockerfile").exists()
-            or (
-                path
-                / "docker-compose.yml"
-            ).exists()
-            or (
-                path
-                / "compose.yml"
-            ).exists()
+            or (path / "docker-compose.yml").exists()
+            or (path / "compose.yml").exists()
         ),
-        "Git Repository": (
-            path / ".git"
-        ).exists(),
+        "Git Repository": (path / ".git").exists(),
     }
+
 
 def calculate_health_score(
     health_items: dict[str, bool],
@@ -296,104 +268,56 @@ def calculate_health_score(
             continue
 
         if item == "README":
-            recommendations.append(
-                "Add a README with setup and usage instructions."
-            )
+            recommendations.append("Add a README with setup and usage instructions.")
 
         elif item == ".gitignore":
-            recommendations.append(
-                "Add a .gitignore file."
-            )
+            recommendations.append("Add a .gitignore file.")
 
         elif item == "Tests":
-            recommendations.append(
-                "Add automated tests."
-            )
+            recommendations.append("Add automated tests.")
 
         elif item == "Environment Template":
-            recommendations.append(
-                "Add a .env.example file."
-            )
+            recommendations.append("Add a .env.example file.")
 
         elif item == "Docker":
-            recommendations.append(
-                "Consider Docker support if deployment requires it."
-            )
+            recommendations.append("Consider Docker support if deployment requires it.")
 
         elif item == "Git Repository":
-            recommendations.append(
-                "Initialize a Git repository."
-            )
+            recommendations.append("Initialize a Git repository.")
 
     return score, recommendations
+
 
 def analyze_project(
     path: Path,
 ) -> dict:
     """Return complete project analysis data."""
 
-    file_count, directory_count = (
-        count_project_items(path)
-    )
+    file_count, directory_count = count_project_items(path)
 
-    extension_stats = (
-        get_file_extension_stats(path)
-    )
+    extension_stats = get_file_extension_stats(path)
 
-    language_stats = (
-        get_language_stats(
-            extension_stats
-        )
-    )
+    language_stats = get_language_stats(extension_stats)
 
-    health_items = (
-        detect_project_health_items(
-            path
-        )
-    )
+    health_items = detect_project_health_items(path)
 
-    health_score, recommendations = (
-        calculate_health_score(
-            health_items
-        )
-    )
+    health_score, recommendations = calculate_health_score(health_items)
 
     return {
         "name": path.name,
         "path": str(path),
-        "type": detect_project_type(
-            path
-        ),
-        "primary_language": (
-            get_primary_language(
-                path
-            )
-        ),
-        "size_bytes": (
-            get_project_size(
-                path
-            )
-        ),
+        "type": detect_project_type(path),
+        "primary_language": (get_primary_language(path)),
+        "size_bytes": (get_project_size(path)),
         "file_count": file_count,
-        "directory_count": (
-            directory_count
-        ),
-        "extension_stats": (
-            extension_stats
-        ),
-        "language_stats": (
-            language_stats
-        ),
-        "health_items": (
-            health_items
-        ),
-        "health_score": (
-            health_score
-        ),
-        "recommendations": (
-            recommendations
-        ),
+        "directory_count": (directory_count),
+        "extension_stats": (extension_stats),
+        "language_stats": (language_stats),
+        "health_items": (health_items),
+        "health_score": (health_score),
+        "recommendations": (recommendations),
     }
+
 
 def list_project_tree(
     path: Path,
@@ -432,24 +356,17 @@ def list_project_tree(
     normalized_extension = None
 
     if extension_filter:
-        normalized_extension = (
-            extension_filter.lower()
-        )
+        normalized_extension = extension_filter.lower()
 
         if not normalized_extension.startswith("."):
-            normalized_extension = (
-                f".{normalized_extension}"
-            )
+            normalized_extension = f".{normalized_extension}"
 
     for item in items:
         ignored = get_ignored(path)
         if item.name in ignored:
             continue
 
-        if (
-            not show_hidden
-            and item.name.startswith(".")
-        ):
+        if not show_hidden and item.name.startswith("."):
             continue
 
         if item.is_dir():
@@ -462,16 +379,10 @@ def list_project_tree(
                 extension_filter=extension_filter,
             )
 
-            node["children"].append(
-                child
-            )
+            node["children"].append(child)
 
         elif show_files:
-            if (
-                normalized_extension
-                and item.suffix.lower()
-                != normalized_extension
-            ):
+            if normalized_extension and item.suffix.lower() != normalized_extension:
                 continue
 
             node["children"].append(
@@ -482,7 +393,8 @@ def list_project_tree(
                 }
             )
 
-    return node    
+    return node
+
 
 def count_tree_nodes(
     node: dict,
@@ -501,11 +413,7 @@ def count_tree_nodes(
         "children",
         [],
     ):
-        child_files, child_directories = (
-            count_tree_nodes(
-                child
-            )
-        )
+        child_files, child_directories = count_tree_nodes(child)
 
         files += child_files
         directories += child_directories

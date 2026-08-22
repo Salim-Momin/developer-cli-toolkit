@@ -1,0 +1,10 @@
+line-length = 88
+
+exclude = [
+    ".venv",
+    "__pycache__",
+]
+
+lint.ignore = [
+    "B008",
+]

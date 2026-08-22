@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from devkit.services.search_service import (
-    search_project,
     search_filenames,
+    search_project,
 )
 
 

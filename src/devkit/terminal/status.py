@@ -36,13 +36,10 @@ def status_badge(
 
     return "[dim]● UNKNOWN[/dim]"
 
+
 def yes_no(
     value: bool,
 ) -> str:
     """Render boolean values consistently."""
 
-    return (
-        "[green]✓ Yes[/green]"
-        if value
-        else "[dim]✗ No[/dim]"
-    )
+    return "[green]✓ Yes[/green]" if value else "[dim]✗ No[/dim]"

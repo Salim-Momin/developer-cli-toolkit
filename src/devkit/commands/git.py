@@ -14,14 +14,12 @@ from devkit.services.git_service import (
     get_sync_status,
     is_git_repository,
 )
-
 from devkit.terminal.components import (
     error,
     section_title,
     success,
     warning,
 )
-
 from devkit.terminal.progress import score_bar
 from devkit.terminal.status import status_badge
 from devkit.terminal.tables import (
@@ -30,10 +28,7 @@ from devkit.terminal.tables import (
 )
 from devkit.terminal.theme import console
 
-
-git_app = typer.Typer(
-    help="Inspect and work with Git repositories."
-)
+git_app = typer.Typer(help="Inspect and work with Git repositories.")
 
 
 def require_git_repository() -> Path:
@@ -42,9 +37,7 @@ def require_git_repository() -> Path:
     path = Path.cwd()
 
     if not is_git_repository(path):
-        error(
-            "This directory is not inside a Git repository."
-        )
+        error("This directory is not inside a Git repository.")
 
         console.print(
             "[devkit.secondary]"
@@ -63,23 +56,16 @@ def git_status():
 
     path = require_git_repository()
 
-    data = get_status_summary(
-        path
-    )
+    data = get_status_summary(path)
 
-    branch = (
-        get_current_branch(path)
-        or "Unknown"
-    )
+    branch = get_current_branch(path) or "Unknown"
 
     section_title(
         "🌿 Git Status",
         path.name,
     )
 
-    table = create_key_value_table(
-        title="Working Tree"
-    )
+    table = create_key_value_table(title="Working Tree")
 
     table.add_row(
         "Branch",
@@ -111,9 +97,7 @@ def git_status():
     if data["clean"]:
         console.print()
 
-        success(
-            "Working tree is clean."
-        )
+        success("Working tree is clean.")
 
 
 @git_app.command("changes")
@@ -122,9 +106,7 @@ def git_changes():
 
     path = require_git_repository()
 
-    changes = get_changed_files(
-        path
-    )
+    changes = get_changed_files(path)
 
     section_title(
         "🌿 Changed Files",
@@ -132,14 +114,10 @@ def git_changes():
     )
 
     if not changes:
-        success(
-            "No changed files."
-        )
+        success("No changed files.")
         return
 
-    table = create_table(
-        title="Changed Files"
-    )
+    table = create_table(title="Changed Files")
 
     table.add_column(
         "Status",
@@ -166,9 +144,7 @@ def git_branches():
 
     path = require_git_repository()
 
-    branches = get_local_branches(
-        path
-    )
+    branches = get_local_branches(path)
 
     section_title(
         "🌿 Local Branches",
@@ -176,14 +152,10 @@ def git_branches():
     )
 
     if not branches:
-        warning(
-            "No local branches found."
-        )
+        warning("No local branches found.")
         return
 
-    table = create_table(
-        title="Branches"
-    )
+    table = create_table(title="Branches")
 
     table.add_column(
         "Branch",
@@ -198,11 +170,7 @@ def git_branches():
     for branch in branches:
         table.add_row(
             branch["name"],
-            (
-                "[green]✓[/green]"
-                if branch["current"]
-                else ""
-            ),
+            ("[green]✓[/green]" if branch["current"] else ""),
         )
 
     console.print(table)
@@ -234,14 +202,10 @@ def git_log(
     )
 
     if not commits:
-        warning(
-            "No commits found."
-        )
+        warning("No commits found.")
         return
 
-    table = create_table(
-        title=f"Recent Commits · {len(commits)}"
-    )
+    table = create_table(title=f"Recent Commits · {len(commits)}")
 
     table.add_column(
         "Hash",
@@ -277,18 +241,14 @@ def git_summary():
 
     path = require_git_repository()
 
-    data = get_repository_summary(
-        path
-    )
+    data = get_repository_summary(path)
 
     section_title(
         "🌿 Repository Summary",
         path.name,
     )
 
-    table = create_key_value_table(
-        title="Repository"
-    )
+    table = create_key_value_table(title="Repository")
 
     table.add_row(
         "Repository Root",
@@ -333,9 +293,7 @@ def git_remote():
 
     path = require_git_repository()
 
-    remotes = get_remotes(
-        path
-    )
+    remotes = get_remotes(path)
 
     section_title(
         "🌿 Git Remotes",
@@ -343,14 +301,10 @@ def git_remote():
     )
 
     if not remotes:
-        warning(
-            "No Git remotes configured."
-        )
+        warning("No Git remotes configured.")
         return
 
-    table = create_table(
-        title="Git Remotes"
-    )
+    table = create_table(title="Git Remotes")
 
     table.add_column(
         "Name",
@@ -382,9 +336,7 @@ def git_sync():
 
     path = require_git_repository()
 
-    data = get_sync_status(
-        path
-    )
+    data = get_sync_status(path)
 
     section_title(
         "🌿 Git Sync Status",
@@ -392,14 +344,10 @@ def git_sync():
     )
 
     if not data["upstream"]:
-        warning(
-            "No upstream tracking branch configured."
-        )
+        warning("No upstream tracking branch configured.")
         return
 
-    table = create_key_value_table(
-        title="Synchronization"
-    )
+    table = create_key_value_table(title="Synchronization")
 
     table.add_row(
         "Local Branch",
@@ -428,29 +376,19 @@ def git_sync():
     console.print()
 
     if state == "synced":
-        success(
-            "Branch is synchronized."
-        )
+        success("Branch is synchronized.")
 
     elif state == "ahead":
-        warning(
-            f'Local branch has {data["ahead"]} unpushed commit(s).'
-        )
+        warning(f'Local branch has {data["ahead"]} unpushed commit(s).')
 
     elif state == "behind":
-        warning(
-            f'Local branch is behind by {data["behind"]} commit(s).'
-        )
+        warning(f'Local branch is behind by {data["behind"]} commit(s).')
 
     elif state == "diverged":
-        warning(
-            "Local and remote branches have diverged."
-        )
+        warning("Local and remote branches have diverged.")
 
     else:
-        warning(
-            "Unable to determine synchronization state."
-        )
+        warning("Unable to determine synchronization state.")
 
 
 @git_app.command("health")
@@ -459,9 +397,7 @@ def git_health():
 
     path = require_git_repository()
 
-    data = get_git_health(
-        path
-    )
+    data = get_git_health(path)
 
     score = data["score"]
 
@@ -470,14 +406,9 @@ def git_health():
         path.name,
     )
 
-    console.print(
-        f"{score_bar(score)} "
-        f"[bold]{score}/100[/bold]\n"
-    )
+    console.print(f"{score_bar(score)} " f"[bold]{score}/100[/bold]\n")
 
-    table = create_table(
-        title="Repository Checks"
-    )
+    table = create_table(title="Repository Checks")
 
     table.add_column(
         "Check",
@@ -496,11 +427,7 @@ def git_health():
     for check in data["checks"]:
         table.add_row(
             check["name"],
-            status_badge(
-                "healthy"
-                if check["ok"]
-                else "attention"
-            ),
+            status_badge("healthy" if check["ok"] else "attention"),
             check["details"],
         )
 

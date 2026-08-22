@@ -1,40 +1,28 @@
-import os
-from pathlib import Path
 from collections import Counter
-from rich.tree import Tree
-
-from devkit.services.project_service import (
-    analyze_project,
-    count_tree_nodes,
-    format_size,
-    list_project_tree,
-)
+from pathlib import Path
 
 import typer
 from rich.console import Console
-from rich.table import Table
+from rich.tree import Tree
 
-from devkit.terminal.progress import score_bar
-from devkit.terminal.status import status_badge, yes_no
-from devkit.terminal.tables import create_table, create_key_value_table
-
+from devkit.core.config import get_tree_defaults
 from devkit.services.project_service import (
     analyze_project,
-    format_size,
+    count_tree_nodes,
+    list_project_tree,
 )
-
 from devkit.terminal.components import (
     section_title,
     success,
 )
+from devkit.terminal.progress import score_bar
+from devkit.terminal.status import status_badge, yes_no
+from devkit.terminal.tables import create_key_value_table, create_table
 
-from devkit.core.config import get_tree_defaults
-
-project_app = typer.Typer(
-    help="Inspect and analyze development projects."
-)
+project_app = typer.Typer(help="Inspect and analyze development projects.")
 
 console = Console()
+
 
 def detect_project_type(path: Path) -> str:
     """Detect the primary project framework or runtime."""
@@ -48,10 +36,7 @@ def detect_project_type(path: Path) -> str:
         return "Next.js"
 
     # Vite / React
-    if (
-        (path / "vite.config.js").exists()
-        or (path / "vite.config.ts").exists()
-    ):
+    if (path / "vite.config.js").exists() or (path / "vite.config.ts").exists():
         package_json = path / "package.json"
 
         if package_json.exists():
@@ -94,18 +79,19 @@ def detect_project_type(path: Path) -> str:
         return "Django"
 
     # Generic Python
-    if (
-        (path / "pyproject.toml").exists()
-        or (path / "requirements.txt").exists()
-    ):
+    if (path / "pyproject.toml").exists() or (path / "requirements.txt").exists():
         return "Python"
 
     # Generic Node.js
     if (path / "package.json").exists():
-        package_content = (path / "package.json").read_text(
-            encoding="utf-8",
-            errors="ignore",
-        ).lower()
+        package_content = (
+            (path / "package.json")
+            .read_text(
+                encoding="utf-8",
+                errors="ignore",
+            )
+            .lower()
+        )
 
         if "react" in package_content:
             return "React"
@@ -113,6 +99,7 @@ def detect_project_type(path: Path) -> str:
         return "Node.js"
 
     return "Unknown"
+
 
 def detect_project_files(path: Path) -> list[str]:
     """Detect important configuration and dependency files."""
@@ -146,14 +133,14 @@ def detect_project_files(path: Path) -> list[str]:
 
     return detected
 
+
 def detect_technologies(path: Path) -> dict[str, bool]:
     """Detect common technologies used by the project."""
 
     return {
         "Git": (path / ".git").exists(),
         "Python": (
-            (path / "requirements.txt").exists()
-            or (path / "pyproject.toml").exists()
+            (path / "requirements.txt").exists() or (path / "pyproject.toml").exists()
         ),
         "Node.js": (path / "package.json").exists(),
         "Docker": (
@@ -162,6 +149,7 @@ def detect_technologies(path: Path) -> dict[str, bool]:
             or (path / "compose.yml").exists()
         ),
     }
+
 
 IGNORED_DIRECTORIES = {
     ".git",
@@ -183,6 +171,7 @@ IGNORED_DIRECTORIES = {
     "target",
 }
 
+
 def count_project_items(path: Path) -> tuple[int, int]:
     """Count files and directories while ignoring generated folders."""
 
@@ -200,6 +189,7 @@ def count_project_items(path: Path) -> tuple[int, int]:
             directory_count += 1
 
     return file_count, directory_count
+
 
 def get_file_extension_stats(path: Path) -> Counter:
     """Count file extensions in the project."""
@@ -219,6 +209,7 @@ def get_file_extension_stats(path: Path) -> Counter:
                 extensions["[no extension]"] += 1
 
     return extensions
+
 
 LANGUAGE_MAP = {
     ".py": "Python",
@@ -244,6 +235,7 @@ LANGUAGE_MAP = {
     ".md": "Markdown",
 }
 
+
 def get_language_stats(extension_stats: Counter) -> Counter:
     """Convert extension statistics into language statistics."""
 
@@ -256,6 +248,7 @@ def get_language_stats(extension_stats: Counter) -> Counter:
             languages[language] += count
 
     return languages
+
 
 def get_project_size(path: Path) -> int:
     """Return total project size in bytes, ignoring generated directories."""
@@ -274,6 +267,7 @@ def get_project_size(path: Path) -> int:
 
     return total_size
 
+
 def format_size(size_bytes: int) -> str:
     """Convert bytes into a human-readable size."""
 
@@ -289,6 +283,7 @@ def format_size(size_bytes: int) -> str:
 
     return f"{size:.2f} TB"
 
+
 def get_primary_language(path: Path) -> str:
     """Return the most common programming language in the project."""
 
@@ -300,6 +295,7 @@ def get_primary_language(path: Path) -> str:
 
     return language_stats.most_common(1)[0][0]
 
+
 def detect_project_health_items(path: Path) -> dict[str, bool]:
     """Detect common project quality indicators."""
 
@@ -309,21 +305,14 @@ def detect_project_health_items(path: Path) -> dict[str, bool]:
         "__tests__",
     ]
 
-    has_tests = any(
-        (path / directory).exists()
-        for directory in test_directories
-    )
+    has_tests = any((path / directory).exists() for directory in test_directories)
 
     return {
-        "README": (
-            (path / "README.md").exists()
-            or (path / "README.rst").exists()
-        ),
+        "README": ((path / "README.md").exists() or (path / "README.rst").exists()),
         ".gitignore": (path / ".gitignore").exists(),
         "Tests": has_tests,
         "Environment Template": (
-            (path / ".env.example").exists()
-            or (path / ".env.sample").exists()
+            (path / ".env.example").exists() or (path / ".env.sample").exists()
         ),
         "Docker": (
             (path / "Dockerfile").exists()
@@ -332,6 +321,7 @@ def detect_project_health_items(path: Path) -> dict[str, bool]:
         ),
         "Git Repository": (path / ".git").exists(),
     }
+
 
 def calculate_health_score(health_items: dict[str, bool]) -> tuple[int, list[str]]:
     """Calculate a basic project health score and recommendations."""
@@ -360,13 +350,18 @@ def calculate_health_score(health_items: dict[str, bool]) -> tuple[int, list[str
         elif item == "Tests":
             recommendations.append("Add automated tests.")
         elif item == "Environment Template":
-            recommendations.append("Add a .env.example file for required environment variables.")
+            recommendations.append(
+                "Add a .env.example file for required environment variables."
+            )
         elif item == "Docker":
-            recommendations.append("Consider adding Docker support if deployment needs it.")
+            recommendations.append(
+                "Consider adding Docker support if deployment needs it."
+            )
         elif item == "Git Repository":
             recommendations.append("Initialize a Git repository.")
 
     return score, recommendations
+
 
 def build_score_bar(score: int, width: int = 20) -> str:
     """Create a simple Rich-compatible project health bar."""
@@ -376,24 +371,21 @@ def build_score_bar(score: int, width: int = 20) -> str:
 
     return f"[green]{'█' * filled}[/green][dim]{'░' * empty}[/dim]"
 
+
 @project_app.command("info")
 def project_info():
     """Display information about the current project."""
 
     project_path = Path.cwd()
 
-    data = analyze_project(
-        project_path
-    )
+    data = analyze_project(project_path)
 
     section_title(
         "📦 Project Information",
         data["name"],
     )
 
-    table = create_key_value_table(
-        title="Project Overview"
-    )
+    table = create_key_value_table(title="Project Overview")
 
     table.add_row(
         "Name",
@@ -417,38 +409,27 @@ def project_info():
 
     table.add_row(
         "Project Size",
-        format_size(
-            data["size_bytes"]
-        ),
+        format_size(data["size_bytes"]),
     )
 
     table.add_row(
         "Files",
-        str(
-            data["file_count"]
-        ),
+        str(data["file_count"]),
     )
 
     table.add_row(
         "Directories",
-        str(
-            data["directory_count"]
-        ),
+        str(data["directory_count"]),
     )
 
-    for item, detected in data[
-        "health_items"
-    ].items():
+    for item, detected in data["health_items"].items():
         table.add_row(
             item,
-            yes_no(
-                detected
-            ),
+            yes_no(detected),
         )
 
-    console.print(
-        table
-    )
+    console.print(table)
+
 
 @project_app.command("stats")
 def project_stats():
@@ -456,18 +437,14 @@ def project_stats():
 
     project_path = Path.cwd()
 
-    data = analyze_project(
-        project_path
-    )
+    data = analyze_project(project_path)
 
     section_title(
         "📊 Project Statistics",
         data["name"],
     )
 
-    language_table = create_table(
-        title="Language Statistics"
-    )
+    language_table = create_table(title="Language Statistics")
 
     language_table.add_column(
         "Language",
@@ -479,21 +456,15 @@ def project_stats():
         justify="right",
     )
 
-    for language, count in data[
-        "language_stats"
-    ].most_common():
+    for language, count in data["language_stats"].most_common():
         language_table.add_row(
             language,
             str(count),
         )
 
-    console.print(
-        language_table
-    )
+    console.print(language_table)
 
-    extension_table = create_table(
-        title="Top File Extensions"
-    )
+    extension_table = create_table(title="Top File Extensions")
 
     extension_table.add_column(
         "Extension",
@@ -505,18 +476,15 @@ def project_stats():
         justify="right",
     )
 
-    for extension, count in data[
-        "extension_stats"
-    ].most_common(10):
+    for extension, count in data["extension_stats"].most_common(10):
         extension_table.add_row(
             extension,
             str(count),
         )
 
     console.print()
-    console.print(
-        extension_table
-    )
+    console.print(extension_table)
+
 
 @project_app.command("health")
 def project_health():
@@ -524,74 +492,46 @@ def project_health():
 
     project_path = Path.cwd()
 
-    data = analyze_project(
-        project_path
-    )
+    data = analyze_project(project_path)
 
-    score = data[
-        "health_score"
-    ]
+    score = data["health_score"]
 
     section_title(
         "❤️ Project Health",
         data["name"],
     )
 
-    console.print(
-        f"{score_bar(score)} "
-        f"[bold]{score}/100[/bold]\n"
-    )
+    console.print(f"{score_bar(score)} " f"[bold]{score}/100[/bold]\n")
 
-    table = create_table(
-        title="Project Health Checks"
-    )
+    table = create_table(title="Project Health Checks")
 
-    table.add_column(
-        "Check"
-    )
+    table.add_column("Check")
 
     table.add_column(
         "Status",
         justify="center",
     )
 
-    for item, detected in data[
-        "health_items"
-    ].items():
+    for item, detected in data["health_items"].items():
         table.add_row(
             item,
-            status_badge(
-                "pass"
-                if detected
-                else "warning"
-            ),
+            status_badge("pass" if detected else "warning"),
         )
 
-    console.print(
-        table
-    )
+    console.print(table)
 
-    recommendations = data[
-        "recommendations"
-    ]
+    recommendations = data["recommendations"]
 
     if recommendations:
-        console.print(
-            "\n[devkit.warning]"
-            "Recommendations"
-            "[/devkit.warning]"
-        )
+        console.print("\n[devkit.warning]" "Recommendations" "[/devkit.warning]")
 
         for recommendation in recommendations:
-            console.print(
-                f"  • {recommendation}"
-            )
+            console.print(f"  • {recommendation}")
 
     else:
         console.print()
-        success(
-            "No major project health issues detected."
-        )
+        success("No major project health issues detected.")
+
 
 def render_tree_node(
     node: dict,
@@ -604,9 +544,7 @@ def render_tree_node(
         [],
     ):
         if child["type"] == "directory":
-            branch = rich_tree.add(
-                f"[bold cyan]📁 {child['name']}[/bold cyan]"
-            )
+            branch = rich_tree.add(f"[bold cyan]📁 {child['name']}[/bold cyan]")
 
             render_tree_node(
                 child,
@@ -614,9 +552,8 @@ def render_tree_node(
             )
 
         else:
-            rich_tree.add(
-                f"📄 {child['name']}"
-            )
+            rich_tree.add(f"📄 {child['name']}")
+
 
 @project_app.command("tree")
 def project_tree(
@@ -650,9 +587,7 @@ def project_tree(
     project_path = Path.cwd()
 
     # Load defaults from .devkit.toml
-    defaults = get_tree_defaults(
-        project_path
-    )
+    defaults = get_tree_defaults(project_path)
 
     resolved_depth = (
         depth
@@ -702,9 +637,7 @@ def project_tree(
     )
 
     # Render it using Rich
-    root = Tree(
-        f"[bold green]📦 {project_path.name}[/bold green]"
-    )
+    root = Tree(f"[bold green]📦 {project_path.name}[/bold green]")
 
     render_tree_node(
         tree_data,
@@ -714,9 +647,7 @@ def project_tree(
     console.print(root)
 
     # Calculate summary
-    file_count, directory_count = count_tree_nodes(
-        tree_data
-    )
+    file_count, directory_count = count_tree_nodes(tree_data)
 
     # Root project folder shouldn't count as child directory
     directory_count = max(

@@ -1,7 +1,6 @@
 from rich.console import Console
 from rich.theme import Theme
 
-
 DEVKIT_THEME = Theme(
     {
         "devkit.primary": "bold cyan",

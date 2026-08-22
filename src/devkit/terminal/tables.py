@@ -19,6 +19,7 @@ def create_table(
         padding=(0, 1),
     )
 
+
 def create_key_value_table(
     title: str | None = None,
 ) -> Table:

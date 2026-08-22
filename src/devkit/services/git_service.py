@@ -1,8 +1,10 @@
 import subprocess
 from pathlib import Path
+
 from devkit.core.logging import get_logger
 
 logger = get_logger()
+
 
 def run_git_command(
     args: list[str],
@@ -18,6 +20,7 @@ def run_git_command(
             text=True,
             timeout=10,
             shell=False,
+            check=False,
         )
 
         if result.returncode != 0:
@@ -38,13 +41,14 @@ def run_git_command(
         FileNotFoundError,
         subprocess.TimeoutExpired,
         OSError,
-    ) as exc:
+    ):
         logger.exception(
             "Git command execution failed: git %s",
             " ".join(args),
         )
 
         return None
+
 
 def is_git_repository(
     path: Path,
@@ -61,6 +65,7 @@ def is_git_repository(
 
     return result == "true"
 
+
 def get_current_branch(
     path: Path,
 ) -> str | None:
@@ -72,7 +77,8 @@ def get_current_branch(
             "--show-current",
         ],
         cwd=path,
-    )    
+    )
+
 
 def get_repository_root(
     path: Path,
@@ -87,6 +93,7 @@ def get_repository_root(
         cwd=path,
     )
 
+
 def get_origin_url(
     path: Path,
 ) -> str | None:
@@ -100,6 +107,7 @@ def get_origin_url(
         ],
         cwd=path,
     )
+
 
 def get_status_lines(
     path: Path,
@@ -117,20 +125,15 @@ def get_status_lines(
     if not output:
         return []
 
-    return [
-        line
-        for line in output.splitlines()
-        if line.strip()
-    ]
+    return [line for line in output.splitlines() if line.strip()]
+
 
 def get_status_summary(
     path: Path,
 ) -> dict:
     """Return summarized working-tree status."""
 
-    lines = get_status_lines(
-        path
-    )
+    lines = get_status_lines(path)
 
     staged = 0
     modified = 0
@@ -164,6 +167,7 @@ def get_status_summary(
         "clean": len(lines) == 0,
     }
 
+
 def get_changed_files(
     path: Path,
 ) -> list[dict]:
@@ -186,10 +190,7 @@ def get_changed_files(
         if len(line) < 3:
             continue
 
-        status = (
-            line[:2].strip()
-            or "-"
-        )
+        status = line[:2].strip() or "-"
 
         file_name = line[3:].strip()
 
@@ -201,6 +202,7 @@ def get_changed_files(
         )
 
     return results
+
 
 def get_local_branches(
     path: Path,
@@ -238,6 +240,7 @@ def get_local_branches(
         )
 
     return branches
+
 
 def get_recent_commits(
     path: Path,
@@ -281,6 +284,7 @@ def get_recent_commits(
 
     return commits
 
+
 def get_remotes(
     path: Path,
 ) -> list[dict]:
@@ -315,6 +319,7 @@ def get_remotes(
 
     return remotes
 
+
 def get_tracking_branch(
     path: Path,
 ) -> str | None:
@@ -329,6 +334,7 @@ def get_tracking_branch(
         ],
         cwd=path,
     )
+
 
 def get_ahead_behind(
     path: Path,
@@ -361,21 +367,17 @@ def get_ahead_behind(
         )
 
     except ValueError:
-        return 0, 0    
+        return 0, 0
+
 
 def get_sync_status(
     path: Path,
 ) -> dict:
     """Return branch synchronization details."""
 
-    branch = (
-        get_current_branch(path)
-        or "Unknown"
-    )
+    branch = get_current_branch(path) or "Unknown"
 
-    upstream = get_tracking_branch(
-        path
-    )
+    upstream = get_tracking_branch(path)
 
     if not upstream:
         return {
@@ -409,56 +411,50 @@ def get_sync_status(
         "ahead": ahead,
         "behind": behind,
         "state": state,
-    }    
+    }
+
 
 def get_git_identity(
     path: Path,
 ) -> dict:
     """Return Git name and email configuration."""
 
-    username = (
-        run_git_command(
-            [
-                "config",
-                "user.name",
-            ],
-            cwd=path,
-        )
-        or run_git_command(
-            [
-                "config",
-                "--global",
-                "user.name",
-            ],
-            cwd=path,
-        )
+    username = run_git_command(
+        [
+            "config",
+            "user.name",
+        ],
+        cwd=path,
+    ) or run_git_command(
+        [
+            "config",
+            "--global",
+            "user.name",
+        ],
+        cwd=path,
     )
 
-    email = (
-        run_git_command(
-            [
-                "config",
-                "user.email",
-            ],
-            cwd=path,
-        )
-        or run_git_command(
-            [
-                "config",
-                "--global",
-                "user.email",
-            ],
-            cwd=path,
-        )
+    email = run_git_command(
+        [
+            "config",
+            "user.email",
+        ],
+        cwd=path,
+    ) or run_git_command(
+        [
+            "config",
+            "--global",
+            "user.email",
+        ],
+        cwd=path,
     )
 
     return {
         "name": username,
         "email": email,
-        "configured": bool(
-            username and email
-        ),
+        "configured": bool(username and email),
     }
+
 
 def get_repository_summary(
     path: Path,
@@ -489,77 +485,48 @@ def get_repository_summary(
         or "No commits"
     )
 
-    status = get_status_summary(
-        path
-    )
+    status = get_status_summary(path)
 
     return {
-        "root": (
-            get_repository_root(path)
-            or str(path)
-        ),
-        "branch": (
-            get_current_branch(path)
-            or "Unknown"
-        ),
+        "root": (get_repository_root(path) or str(path)),
+        "branch": (get_current_branch(path) or "Unknown"),
         "commit_count": commit_count,
-        "origin": (
-            get_origin_url(path)
-            or "Not configured"
-        ),
+        "origin": (get_origin_url(path) or "Not configured"),
         "latest_commit": latest_commit,
         "clean": status["clean"],
-    }    
+    }
+
 
 def get_git_health(
     path: Path,
 ) -> dict:
     """Return Git repository health information."""
 
-    branch = get_current_branch(
-        path
-    )
+    branch = get_current_branch(path)
 
-    origin = get_origin_url(
-        path
-    )
+    origin = get_origin_url(path)
 
-    upstream = get_tracking_branch(
-        path
-    )
+    upstream = get_tracking_branch(path)
 
-    identity = get_git_identity(
-        path
-    )
+    identity = get_git_identity(path)
 
-    status = get_status_summary(
-        path
-    )
+    status = get_status_summary(path)
 
     checks = [
         {
             "name": "Current Branch",
             "ok": bool(branch),
-            "details": (
-                branch
-                or "Detached HEAD"
-            ),
+            "details": (branch or "Detached HEAD"),
         },
         {
             "name": "Origin Remote",
             "ok": bool(origin),
-            "details": (
-                origin
-                or "Not configured"
-            ),
+            "details": (origin or "Not configured"),
         },
         {
             "name": "Tracking Branch",
             "ok": bool(upstream),
-            "details": (
-                upstream
-                or "Not configured"
-            ),
+            "details": (upstream or "Not configured"),
         },
         {
             "name": "Git Identity",
@@ -573,28 +540,13 @@ def get_git_health(
         {
             "name": "Working Tree",
             "ok": status["clean"],
-            "details": (
-                "Clean"
-                if status["clean"]
-                else "Uncommitted changes detected"
-            ),
+            "details": ("Clean" if status["clean"] else "Uncommitted changes detected"),
         },
     ]
 
-    score = round(
-        (
-            sum(
-                1
-                for check in checks
-                if check["ok"]
-            )
-            / len(checks)
-        )
-        * 100
-    )
+    score = round((sum(1 for check in checks if check["ok"]) / len(checks)) * 100)
 
     return {
         "score": score,
         "checks": checks,
     }
-

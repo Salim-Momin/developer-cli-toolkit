@@ -1,9 +1,11 @@
 import re
 from pathlib import Path
+
 from devkit.core.config import get_ignored_directories
 from devkit.core.logging import get_logger
 
 logger = get_logger()
+
 
 def should_ignore(
     path: Path,
@@ -11,22 +13,16 @@ def should_ignore(
 ) -> bool:
     """Return True when path belongs to an ignored directory."""
 
-    ignored = get_ignored_directories(
-        root
-    )
+    ignored = get_ignored_directories(root)
 
     try:
-        relative = path.relative_to(
-            root
-        )
+        relative = path.relative_to(root)
 
     except ValueError:
         relative = path
 
-    return any(
-        part in ignored
-        for part in relative.parts
-    )
+    return any(part in ignored for part in relative.parts)
+
 
 def normalize_extension(
     extension: str | None,
@@ -58,6 +54,7 @@ def is_binary_file(
     except OSError:
         return True
 
+
 def search_project(
     root: Path,
     query: str,
@@ -69,15 +66,9 @@ def search_project(
 
     results = []
 
-    normalized_extension = normalize_extension(
-        extension
-    )
+    normalized_extension = normalize_extension(extension)
 
-    flags = (
-        0
-        if case_sensitive
-        else re.IGNORECASE
-    )
+    flags = 0 if case_sensitive else re.IGNORECASE
 
     pattern = None
 
@@ -89,15 +80,9 @@ def search_project(
             )
 
         except re.error as exc:
-            raise ValueError(
-                f"Invalid regular expression: {exc}"
-            ) from exc
+            raise ValueError(f"Invalid regular expression: {exc}") from exc
 
-    search_query = (
-        query
-        if case_sensitive
-        else query.lower()
-    )
+    search_query = query if case_sensitive else query.lower()
 
     for file_path in root.rglob("*"):
         if should_ignore(
@@ -109,11 +94,7 @@ def search_project(
         if not file_path.is_file():
             continue
 
-        if (
-            normalized_extension
-            and file_path.suffix.lower()
-            != normalized_extension
-        ):
+        if normalized_extension and file_path.suffix.lower() != normalized_extension:
             continue
 
         if is_binary_file(file_path):
@@ -143,21 +124,12 @@ def search_project(
             start=1,
         ):
             if regex and pattern:
-                matched = bool(
-                    pattern.search(line)
-                )
+                matched = bool(pattern.search(line))
 
             else:
-                searchable_line = (
-                    line
-                    if case_sensitive
-                    else line.lower()
-                )
+                searchable_line = line if case_sensitive else line.lower()
 
-                matched = (
-                    search_query
-                    in searchable_line
-                )
+                matched = search_query in searchable_line
 
             if not matched:
                 continue
@@ -172,6 +144,7 @@ def search_project(
 
     return results
 
+
 def search_filenames(
     root: Path,
     query: str,
@@ -181,11 +154,7 @@ def search_filenames(
 
     results = []
 
-    search_query = (
-        query
-        if case_sensitive
-        else query.lower()
-    )
+    search_query = query if case_sensitive else query.lower()
 
     for path in root.rglob("*"):
         if should_ignore(
@@ -197,16 +166,13 @@ def search_filenames(
         if not path.is_file():
             continue
 
-        filename = (
-            path.name
-            if case_sensitive
-            else path.name.lower()
-        )
+        filename = path.name if case_sensitive else path.name.lower()
 
         if search_query in filename:
             results.append(path)
 
-    return results    
+    return results
+
 
 def find_match_ranges(
     text: str,
@@ -218,11 +184,7 @@ def find_match_ranges(
     if not query:
         return []
 
-    flags = (
-        0
-        if case_sensitive
-        else re.IGNORECASE
-    )
+    flags = 0 if case_sensitive else re.IGNORECASE
 
     pattern = re.compile(
         re.escape(query),

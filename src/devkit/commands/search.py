@@ -3,6 +3,7 @@ from pathlib import Path
 import typer
 from rich.markup import escape
 
+from devkit.core.config import get_search_defaults
 from devkit.services.search_service import (
     find_match_ranges,
     search_filenames,
@@ -15,7 +16,6 @@ from devkit.terminal.components import (
 )
 from devkit.terminal.tables import create_table
 from devkit.terminal.theme import console
-from devkit.core.config import get_search_defaults
 
 
 def highlight_match(
@@ -38,25 +38,13 @@ def highlight_match(
     position = 0
 
     for start, end in ranges:
-        parts.append(
-            escape(
-                text[position:start]
-            )
-        )
+        parts.append(escape(text[position:start]))
 
-        parts.append(
-            "[bold yellow]"
-            + escape(text[start:end])
-            + "[/bold yellow]"
-        )
+        parts.append("[bold yellow]" + escape(text[start:end]) + "[/bold yellow]")
 
         position = end
 
-    parts.append(
-        escape(
-            text[position:]
-        )
-    )
+    parts.append(escape(text[position:]))
 
     return "".join(parts)
 
@@ -103,9 +91,7 @@ def search_text(
 
     project_path = Path.cwd()
 
-    defaults = get_search_defaults(
-        project_path
-    )
+    defaults = get_search_defaults(project_path)
 
     resolved_case_sensitive = (
         case_sensitive
@@ -139,9 +125,7 @@ def search_text(
     # ---------------------------------------------------------
 
     if filename:
-        with loading(
-            "Searching filenames..."
-        ):
+        with loading("Searching filenames..."):
             results = search_filenames(
                 root=project_path,
                 query=query,
@@ -156,12 +140,7 @@ def search_text(
             )
             return
 
-        table = create_table(
-            title=(
-                f"Filename Results · "
-                f"{len(results)} matches"
-            )
-        )
+        table = create_table(title=(f"Filename Results · " f"{len(results)} matches"))
 
         table.add_column(
             "File",
@@ -170,15 +149,11 @@ def search_text(
 
         for result in results[:resolved_limit]:
             try:
-                relative_path = result.relative_to(
-                    project_path
-                )
+                relative_path = result.relative_to(project_path)
             except ValueError:
                 relative_path = result
 
-            table.add_row(
-                str(relative_path)
-            )
+            table.add_row(str(relative_path))
 
         console.print()
         console.print(table)
@@ -198,9 +173,7 @@ def search_text(
     # ---------------------------------------------------------
 
     try:
-        with loading(
-            "Searching project..."
-        ):
+        with loading("Searching project..."):
             results = search_project(
                 root=project_path,
                 query=query,
@@ -210,25 +183,16 @@ def search_text(
             )
 
     except ValueError as exc:
-        error(
-            str(exc)
-        )
+        error(str(exc))
         raise typer.Exit(code=1)
 
     if not results:
         console.print(
-            "\n[devkit.warning]"
-            "⚠ No matching text found."
-            "[/devkit.warning]"
+            "\n[devkit.warning]" "⚠ No matching text found." "[/devkit.warning]"
         )
         return
 
-    table = create_table(
-        title=(
-            f"Search Results · "
-            f"{len(results)} matches"
-        )
-    )
+    table = create_table(title=(f"Search Results · " f"{len(results)} matches"))
 
     table.add_column(
         "File",
@@ -249,9 +213,7 @@ def search_text(
         file_path = result["file"]
 
         try:
-            relative_path = file_path.relative_to(
-                project_path
-            )
+            relative_path = file_path.relative_to(project_path)
         except ValueError:
             relative_path = file_path
 
@@ -261,9 +223,7 @@ def search_text(
             text = text[:117] + "..."
 
         if regex:
-            display_text = escape(
-                text
-            )
+            display_text = escape(text)
 
         else:
             display_text = highlight_match(

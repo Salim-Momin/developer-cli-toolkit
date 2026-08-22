@@ -1,19 +1,14 @@
-from pathlib import Path
-
 import typer
 
 from devkit.core.logging import LOG_FILE
 from devkit.terminal.components import (
-    error,
     section_title,
     success,
     warning,
 )
 from devkit.terminal.theme import console
 
-logs_app = typer.Typer(
-    help="View and manage DevKit logs."
-)
+logs_app = typer.Typer(help="View and manage DevKit logs.")
 
 
 @logs_app.command("show")

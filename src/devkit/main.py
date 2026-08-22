@@ -1,17 +1,18 @@
 import typer
 from rich.console import Console
-from devkit.commands.project import project_app
-from devkit.ui import run_interactive_menu
-from devkit.commands.search import search_text
+
+from devkit.commands.api import api_app
+from devkit.commands.config import config_app
+from devkit.commands.convert import convert_app
 from devkit.commands.doctor import doctor
 from devkit.commands.git import git_app
 from devkit.commands.json_tools import json_app
-from devkit.commands.yaml_tools import yaml_app
-from devkit.commands.convert import convert_app
-from devkit.commands.api import api_app
-from devkit.commands.config import config_app
-from devkit.core.logging import setup_logging, get_logger
 from devkit.commands.logs import logs_app
+from devkit.commands.project import project_app
+from devkit.commands.search import search_text
+from devkit.commands.yaml_tools import yaml_app
+from devkit.core.logging import get_logger, setup_logging
+from devkit.ui import run_interactive_menu
 
 app = typer.Typer(
     name="devkit",
@@ -56,13 +57,11 @@ app.add_typer(
     name="config",
 )
 
-app.add_typer(
-    logs_app,
-    name="logs"
-)
+app.add_typer(logs_app, name="logs")
 
 app.command("search")(search_text)
 app.command("doctor")(doctor)
+
 
 @app.callback()
 def main(
@@ -75,29 +74,24 @@ def main(
 ):
     """Developer CLI Toolkit."""
 
-    setup_logging(
-        debug=debug
-    )
+    setup_logging(debug=debug)
 
     logger = get_logger()
 
-    command = " ".join(
-        ["devkit"] + ctx.args
-    )
+    command = " ".join(["devkit"] + ctx.args)
 
     logger.info(
         "Executing command: %s",
         command,
     )
 
-    ctx.ensure_object(
-        dict
-    )
+    ctx.ensure_object(dict)
 
     ctx.obj["debug"] = debug
 
     if ctx.invoked_subcommand is None:
         run_interactive_menu()
+
 
 @app.command()
 def hello():

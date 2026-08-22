@@ -9,14 +9,11 @@ from devkit.terminal.components import (
     error,
     section_title,
     success,
-    warning,
 )
 from devkit.terminal.theme import console
 
+json_app = typer.Typer(help="Validate, format, inspect and manipulate JSON files.")
 
-json_app = typer.Typer(
-    help="Validate, format, inspect and manipulate JSON files."
-)
 
 def load_json_file(path: Path):
     """Safely load and parse a JSON file."""
@@ -30,9 +27,7 @@ def load_json_file(path: Path):
         raise typer.Exit(code=1)
 
     try:
-        content = path.read_text(
-            encoding="utf-8-sig"
-        )
+        content = path.read_text(encoding="utf-8-sig")
 
     except (PermissionError, OSError) as exc:
         error(f"Could not read file: {exc}")
@@ -50,13 +45,10 @@ def load_json_file(path: Path):
             f"[/devkit.secondary]"
         )
 
-        console.print(
-            f"[devkit.secondary]"
-            f"{exc.msg}"
-            f"[/devkit.secondary]"
-        )
+        console.print(f"[devkit.secondary]" f"{exc.msg}" f"[/devkit.secondary]")
 
         raise typer.Exit(code=1)
+
 
 def describe_json_value(value) -> str:
     """Return a readable JSON value type."""
@@ -84,6 +76,7 @@ def describe_json_value(value) -> str:
 
     return type(value).__name__
 
+
 @json_app.command("validate")
 def json_validate(
     file: Path = typer.Argument(
@@ -100,9 +93,8 @@ def json_validate(
 
     load_json_file(file)
 
-    success(
-        "JSON is valid."
-    )    
+    success("JSON is valid.")
+
 
 @json_app.command("format")
 def json_format(
@@ -143,14 +135,10 @@ def json_format(
             )
 
         except (PermissionError, OSError) as exc:
-            error(
-                f"Could not write file: {exc}"
-            )
+            error(f"Could not write file: {exc}")
             raise typer.Exit(code=1)
 
-        success(
-            f"Formatted {file}."
-        )
+        success(f"Formatted {file}.")
 
         return
 
@@ -168,6 +156,7 @@ def json_format(
     )
 
     console.print(syntax)
+
 
 @json_app.command("minify")
 def json_minify(
@@ -200,14 +189,10 @@ def json_minify(
             )
 
         except (PermissionError, OSError) as exc:
-            error(
-                f"Could not write file: {exc}"
-            )
+            error(f"Could not write file: {exc}")
             raise typer.Exit(code=1)
 
-        success(
-            f"Minified {file}."
-        )
+        success(f"Minified {file}.")
 
         return
 
@@ -217,6 +202,7 @@ def json_minify(
     )
 
     console.print(minified)
+
 
 @json_app.command("inspect")
 def json_inspect(
@@ -242,9 +228,7 @@ def json_inspect(
     )
 
     if isinstance(data, dict):
-        table = Table(
-            title="Top-Level Properties"
-        )
+        table = Table(title="Top-Level Properties")
 
         table.add_column(
             "Key",
@@ -261,25 +245,16 @@ def json_inspect(
         )
 
         for key, value in data.items():
-            value_type = describe_json_value(
-                value
-            )
+            value_type = describe_json_value(value)
 
             if isinstance(value, dict):
-                summary = (
-                    f"{len(value)} properties"
-                )
+                summary = f"{len(value)} properties"
 
             elif isinstance(value, list):
-                summary = (
-                    f"{len(value)} items"
-                )
+                summary = f"{len(value)} items"
 
             elif isinstance(value, str):
-                summary = (
-                    value[:40]
-                    + ("..." if len(value) > 40 else "")
-                )
+                summary = value[:40] + ("..." if len(value) > 40 else "")
 
             else:
                 summary = str(value)
@@ -294,14 +269,8 @@ def json_inspect(
 
     elif isinstance(data, list):
         console.print(
-            f"[devkit.info]"
-            f"Array contains {len(data)} item(s)."
-            f"[/devkit.info]"
+            f"[devkit.info]" f"Array contains {len(data)} item(s)." f"[/devkit.info]"
         )
 
     else:
-        console.print(
-            f"[devkit.info]"
-            f"Value: {data}"
-            f"[/devkit.info]"
-        )
+        console.print(f"[devkit.info]" f"Value: {data}" f"[/devkit.info]")

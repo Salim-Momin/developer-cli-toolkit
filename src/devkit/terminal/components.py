@@ -1,13 +1,13 @@
+from contextlib import contextmanager
 from pathlib import Path
 
 from rich.panel import Panel
+from rich.rule import Rule
 from rich.table import Table
 from rich.text import Text
-from rich.rule import Rule
 
 from devkit.terminal.theme import console
 
-from contextlib import contextmanager
 
 def show_banner() -> None:
     """Display the DevKit command-center banner."""
@@ -49,6 +49,7 @@ def show_banner() -> None:
         )
     )
 
+
 def section_title(
     title: str,
     subtitle: str | None = None,
@@ -57,14 +58,10 @@ def section_title(
 
     console.print()
 
-    console.print(
-        f"[devkit.primary]{title}[/devkit.primary]"
-    )
+    console.print(f"[devkit.primary]{title}[/devkit.primary]")
 
     if subtitle:
-        console.print(
-            f"[devkit.secondary]{subtitle}[/devkit.secondary]"
-        )
+        console.print(f"[devkit.secondary]{subtitle}[/devkit.secondary]")
 
     console.print()
 
@@ -72,41 +69,32 @@ def section_title(
 def success(message: str) -> None:
     """Display a success message."""
 
-    console.print(
-        f"[devkit.success]✓ {message}[/devkit.success]"
-    )
+    console.print(f"[devkit.success]✓ {message}[/devkit.success]")
 
 
 def warning(message: str) -> None:
     """Display a warning message."""
 
-    console.print(
-        f"[devkit.warning]⚠ {message}[/devkit.warning]"
-    )
+    console.print(f"[devkit.warning]⚠ {message}[/devkit.warning]")
 
 
 def error(message: str) -> None:
     """Display an error message."""
 
-    console.print(
-        f"[devkit.error]✗ {message}[/devkit.error]"
-    )
+    console.print(f"[devkit.error]✗ {message}[/devkit.error]")
 
 
 def info(message: str) -> None:
     """Display an informational message."""
 
-    console.print(
-        f"[devkit.info]• {message}[/devkit.info]"
-    )
+    console.print(f"[devkit.info]• {message}[/devkit.info]")
 
 
 def command_hint(command: str) -> None:
     """Display a command hint."""
 
     console.print(
-        f"[devkit.secondary]Try:[/devkit.secondary] "
-        f"[bold]{command}[/bold]"
+        f"[devkit.secondary]Try:[/devkit.secondary] " f"[bold]{command}[/bold]"
     )
 
 
@@ -131,6 +119,7 @@ def build_menu_table() -> Table:
 
     return table
 
+
 def divider(
     title: str | None = None,
 ) -> None:
@@ -143,6 +132,7 @@ def divider(
         )
     )
 
+
 def result_summary(
     title: str,
     values: list[tuple[str, str]],
@@ -153,9 +143,7 @@ def result_summary(
         create_key_value_table,
     )
 
-    table = create_key_value_table(
-        title=title
-    )
+    table = create_key_value_table(title=title)
 
     for label, value in values:
         table.add_row(
@@ -163,7 +151,8 @@ def result_summary(
             value,
         )
 
-    console.print(table)    
+    console.print(table)
+
 
 def footer_hint(
     text: str,
@@ -172,9 +161,8 @@ def footer_hint(
 
     console.print()
 
-    console.print(
-        f"[bright_black]{text}[/bright_black]"
-    )
+    console.print(f"[bright_black]{text}[/bright_black]")
+
 
 @contextmanager
 def loading(
@@ -186,7 +174,8 @@ def loading(
         f"[cyan]{message}[/cyan]",
         spinner="dots",
     ):
-        yield    
+        yield
+
 
 def debug_error(
     message: str,
@@ -195,13 +184,9 @@ def debug_error(
 ) -> None:
     """Display a clean error and optional debug details."""
 
-    error(
-        message
-    )
+    error(message)
 
     if debug and exception:
         console.print()
 
-        console.print_exception(
-            show_locals=False
-        )        
+        console.print_exception(show_locals=False)

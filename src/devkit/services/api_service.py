@@ -1,19 +1,17 @@
 import json
 import time
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
-from devkit.core.exceptions import APIError
-from devkit.core.logging import get_logger
+
 import httpx
 
+from devkit.core.exceptions import APIError
+from devkit.core.logging import get_logger
 
-HISTORY_FILE = (
-    Path.home()
-    / ".devkit"
-    / "api_history.json"
-)
+HISTORY_FILE = Path.home() / ".devkit" / "api_history.json"
 
 logger = get_logger()
+
 
 def parse_headers(
     headers: list[str] | None,
@@ -27,9 +25,7 @@ def parse_headers(
 
     for header in headers:
         if ":" not in header:
-            raise ValueError(
-                f"Invalid header: {header}. Use 'Name: Value'."
-            )
+            raise ValueError(f"Invalid header: {header}. Use 'Name: Value'.")
 
         name, value = header.split(
             ":",
@@ -53,9 +49,7 @@ def parse_params(
 
     for param in params:
         if "=" not in param:
-            raise ValueError(
-                f"Invalid query parameter: {param}. Use 'key=value'."
-            )
+            raise ValueError(f"Invalid query parameter: {param}. Use 'key=value'.")
 
         key, value = param.split(
             "=",
@@ -76,14 +70,10 @@ def parse_json_body(
         return None
 
     try:
-        return json.loads(
-            json_body
-        )
+        return json.loads(json_body)
 
     except json.JSONDecodeError as exc:
-        raise ValueError(
-            f"Invalid JSON body: {exc.msg}"
-        ) from exc
+        raise ValueError(f"Invalid JSON body: {exc.msg}") from exc
 
 
 def load_json_body_file(
@@ -94,29 +84,19 @@ def load_json_body_file(
     if not path:
         return None
 
-    file_path = Path(
-        path
-    )
+    file_path = Path(path)
 
     if not file_path.exists():
-        raise ValueError(
-            f"JSON body file not found: {path}"
-        )
+        raise ValueError(f"JSON body file not found: {path}")
 
     try:
-        content = file_path.read_text(
-            encoding="utf-8-sig"
-        )
+        content = file_path.read_text(encoding="utf-8-sig")
 
     except OSError as exc:
-        raise ValueError(
-            f"Could not read {path}: {exc}"
-        ) from exc
+        raise ValueError(f"Could not read {path}: {exc}") from exc
 
     try:
-        return json.loads(
-            content
-        )
+        return json.loads(content)
 
     except json.JSONDecodeError as exc:
         raise ValueError(
@@ -125,6 +105,7 @@ def load_json_body_file(
             f"column {exc.colno}: "
             f"{exc.msg}"
         ) from exc
+
 
 def send_request(
     method: str,
@@ -158,9 +139,7 @@ def send_request(
             url,
         )
 
-        raise APIError(
-            "Request timed out."
-        ) from exc
+        raise APIError("Request timed out.") from exc
 
     except httpx.RequestError as exc:
         logger.exception(
@@ -169,16 +148,12 @@ def send_request(
             url,
         )
 
-        raise APIError(
-            f"Request failed: {exc}"
-        ) from exc
+        raise APIError(f"Request failed: {exc}") from exc
 
-    duration_ms = (
-        time.perf_counter()
-        - start
-    ) * 1000
+    duration_ms = (time.perf_counter() - start) * 1000
 
-    return response, duration_ms    
+    return response, duration_ms
+
 
 def save_response(
     response: httpx.Response,
@@ -186,21 +161,16 @@ def save_response(
 ) -> Path:
     """Save response body to disk."""
 
-    path = Path(
-        output
-    )
+    path = Path(output)
 
     try:
-        path.write_bytes(
-            response.content
-        )
+        path.write_bytes(response.content)
 
     except OSError as exc:
-        raise ValueError(
-            f"Could not save response: {exc}"
-        ) from exc
+        raise ValueError(f"Could not save response: {exc}") from exc
 
     return path
+
 
 def save_request_history(
     method: str,
@@ -219,11 +189,7 @@ def save_request_history(
 
     if HISTORY_FILE.exists():
         try:
-            history = json.loads(
-                HISTORY_FILE.read_text(
-                    encoding="utf-8-sig"
-                )
-            )
+            history = json.loads(HISTORY_FILE.read_text(encoding="utf-8-sig"))
 
         except (
             json.JSONDecodeError,
@@ -233,9 +199,7 @@ def save_request_history(
 
     history.append(
         {
-            "time": datetime.now().isoformat(
-                timespec="seconds"
-            ),
+            "time": datetime.now(UTC).isoformat(timespec="seconds"),
             "method": method,
             "url": url,
             "status": status,
@@ -260,6 +224,7 @@ def save_request_history(
     except OSError:
         pass
 
+
 def get_request_history(
     limit: int = 10,
 ) -> list[dict]:
@@ -269,11 +234,7 @@ def get_request_history(
         return []
 
     try:
-        history = json.loads(
-            HISTORY_FILE.read_text(
-                encoding="utf-8-sig"
-            )
-        )
+        history = json.loads(HISTORY_FILE.read_text(encoding="utf-8-sig"))
 
     except (
         json.JSONDecodeError,
@@ -281,9 +242,8 @@ def get_request_history(
     ):
         return []
 
-    return history[
-        -limit:
-    ][::-1]
+    return history[-limit:][::-1]
+
 
 def execute_api_request(
     method: str,
@@ -298,35 +258,20 @@ def execute_api_request(
 ) -> dict:
     """Execute a complete API request workflow."""
 
-    parsed_headers = parse_headers(
-        headers
-    )
+    parsed_headers = parse_headers(headers)
 
-    parsed_params = parse_params(
-        params
-    )
+    parsed_params = parse_params(params)
 
     if json_body and json_file:
-        raise ValueError(
-            "Use either --json or --json-file, not both."
-        )
+        raise ValueError("Use either --json or --json-file, not both.")
 
-    if raw_body and (
-        json_body
-        or json_file
-    ):
-        raise ValueError(
-            "Use raw body or JSON body, not both."
-        )
+    if raw_body and (json_body or json_file):
+        raise ValueError("Use raw body or JSON body, not both.")
 
     if json_file:
-        body = load_json_body_file(
-            json_file
-        )
+        body = load_json_body_file(json_file)
     else:
-        body = parse_json_body(
-            json_body
-        )
+        body = parse_json_body(json_body)
 
     response, duration_ms = send_request(
         method=method,
@@ -357,4 +302,4 @@ def execute_api_request(
         "response": response,
         "duration_ms": duration_ms,
         "saved_path": saved_path,
-    }    
+    }

@@ -9,9 +9,7 @@ def score_bar(
         min(score, 100),
     )
 
-    filled = round(
-        score / 100 * width
-    )
+    filled = round(score / 100 * width)
 
     empty = width - filled
 

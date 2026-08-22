@@ -7,9 +7,7 @@ from devkit.commands.api import (
     api_post,
     api_put,
 )
-
 from devkit.commands.doctor import doctor
-
 from devkit.commands.git import (
     git_branches,
     git_changes,
@@ -20,32 +18,26 @@ from devkit.commands.git import (
     git_summary,
     git_sync,
 )
-
 from devkit.commands.project import (
     project_health,
     project_info,
     project_stats,
     project_tree,
 )
-
 from devkit.commands.search import search_text
-
 from devkit.terminal.components import (
     build_menu_table,
     footer_hint,
     section_title,
     show_banner,
 )
-
 from devkit.terminal.theme import console
 
 
 def show_menu() -> None:
     """Display the main DevKit interactive menu."""
 
-    console.print(
-        "[devkit.secondary]PROJECT[/devkit.secondary]"
-    )
+    console.print("[devkit.secondary]PROJECT[/devkit.secondary]")
 
     project_table = build_menu_table()
 
@@ -77,11 +69,7 @@ def show_menu() -> None:
 
     console.print()
 
-    console.print(
-        "[devkit.secondary]"
-        "DEVELOPER TOOLS"
-        "[/devkit.secondary]"
-    )
+    console.print("[devkit.secondary]" "DEVELOPER TOOLS" "[/devkit.secondary]")
 
     tools_table = build_menu_table()
 
@@ -109,7 +97,7 @@ def show_menu() -> None:
         "10",
         "📚 Command Reference",
     )
-    
+
     console.print(tools_table)
     # -----------------------------------------------------
     # Coming Soon
@@ -117,11 +105,7 @@ def show_menu() -> None:
 
     console.print()
 
-    console.print(
-        "[devkit.secondary]"
-        "COMING SOON"
-        "[/devkit.secondary]"
-    )
+    console.print("[devkit.secondary]" "COMING SOON" "[/devkit.secondary]")
 
     future_table = build_menu_table()
 
@@ -157,9 +141,7 @@ def run_search_menu() -> None:
         "Search source code and filenames inside the current project.",
     )
 
-    query = typer.prompt(
-        "Search query"
-    )
+    query = typer.prompt("Search query")
 
     console.print()
 
@@ -167,19 +149,13 @@ def run_search_menu() -> None:
     console.print("2  Filename Search")
     console.print("0  Back")
 
-    mode = typer.prompt(
-        "\nChoose search mode"
-    )
+    mode = typer.prompt("\nChoose search mode")
 
     if mode == "0":
         return
 
     if mode not in {"1", "2"}:
-        console.print(
-            "[devkit.error]"
-            "✗ Invalid search mode."
-            "[/devkit.error]"
-        )
+        console.print("[devkit.error]" "✗ Invalid search mode." "[/devkit.error]")
         return
 
     extension = typer.prompt(
@@ -267,13 +243,9 @@ def run_git_menu() -> None:
 
     console.print(git_table)
 
-    footer_hint(
-        "Choose a Git tool · 0 to return"
-    )
+    footer_hint("Choose a Git tool · 0 to return")
 
-    git_choice = typer.prompt(
-        "\nChoose Git command"
-    )
+    git_choice = typer.prompt("\nChoose Git command")
 
     if git_choice == "1":
         git_status()
@@ -285,9 +257,7 @@ def run_git_menu() -> None:
         git_branches()
 
     elif git_choice == "4":
-        git_log(
-            limit=10
-        )
+        git_log(limit=10)
 
     elif git_choice == "5":
         git_summary()
@@ -305,11 +275,7 @@ def run_git_menu() -> None:
         return
 
     else:
-        console.print(
-            "[devkit.error]"
-            "✗ Invalid Git option."
-            "[/devkit.error]"
-        )
+        console.print("[devkit.error]" "✗ Invalid Git option." "[/devkit.error]")
 
 
 def run_api_menu() -> None:
@@ -356,13 +322,9 @@ def run_api_menu() -> None:
 
     console.print(api_table)
 
-    footer_hint(
-        "Choose an HTTP method · 0 to return"
-    )
+    footer_hint("Choose an HTTP method · 0 to return")
 
-    api_choice = typer.prompt(
-        "\nChoose HTTP method"
-    )
+    api_choice = typer.prompt("\nChoose HTTP method")
 
     if api_choice == "0":
         return
@@ -374,16 +336,10 @@ def run_api_menu() -> None:
         "4",
         "5",
     }:
-        console.print(
-            "[devkit.error]"
-            "✗ Invalid API option."
-            "[/devkit.error]"
-        )
+        console.print("[devkit.error]" "✗ Invalid API option." "[/devkit.error]")
         return
 
-    url = typer.prompt(
-        "Request URL"
-    )
+    url = typer.prompt("Request URL")
 
     # -----------------------------------------------------
     # GET
@@ -476,6 +432,7 @@ def pause_menu() -> None:
         show_default=False,
     )
 
+
 def show_command_reference() -> None:
     """Display all DevKit commands grouped by tool."""
 
@@ -524,9 +481,7 @@ def show_command_reference() -> None:
         "devkit project tree -e py",
     )
 
-    console.print(
-        "[devkit.primary]PROJECT TOOLS[/devkit.primary]"
-    )
+    console.print("[devkit.primary]PROJECT TOOLS[/devkit.primary]")
 
     console.print(project_table)
 
@@ -565,9 +520,7 @@ def show_command_reference() -> None:
         'devkit search "import" -l 10',
     )
 
-    console.print(
-        "[devkit.primary]SMART SEARCH[/devkit.primary]"
-    )
+    console.print("[devkit.primary]SMART SEARCH[/devkit.primary]")
 
     console.print(search_table)
 
@@ -581,9 +534,7 @@ def show_command_reference() -> None:
         "devkit doctor",
     )
 
-    console.print(
-        "[devkit.primary]ENVIRONMENT DOCTOR[/devkit.primary]"
-    )
+    console.print("[devkit.primary]ENVIRONMENT DOCTOR[/devkit.primary]")
 
     console.print(doctor_table)
 
@@ -602,9 +553,7 @@ def show_command_reference() -> None:
     git_table.add_row("", "devkit git sync")
     git_table.add_row("", "devkit git health")
 
-    console.print(
-        "[devkit.primary]GIT TOOLKIT[/devkit.primary]"
-    )
+    console.print("[devkit.primary]GIT TOOLKIT[/devkit.primary]")
 
     console.print(git_table)
 
@@ -638,9 +587,7 @@ def show_command_reference() -> None:
         "devkit json inspect file.json",
     )
 
-    console.print(
-        "[devkit.primary]JSON TOOLS[/devkit.primary]"
-    )
+    console.print("[devkit.primary]JSON TOOLS[/devkit.primary]")
 
     console.print(json_table)
 
@@ -669,9 +616,7 @@ def show_command_reference() -> None:
         "devkit yaml inspect file.yaml",
     )
 
-    console.print(
-        "[devkit.primary]YAML TOOLS[/devkit.primary]"
-    )
+    console.print("[devkit.primary]YAML TOOLS[/devkit.primary]")
 
     console.print(yaml_table)
 
@@ -700,9 +645,7 @@ def show_command_reference() -> None:
         "devkit convert yaml-to-json file.yaml -o file.json",
     )
 
-    console.print(
-        "[devkit.primary]FORMAT CONVERSION[/devkit.primary]"
-    )
+    console.print("[devkit.primary]FORMAT CONVERSION[/devkit.primary]")
 
     console.print(convert_table)
 
@@ -761,17 +704,14 @@ def show_command_reference() -> None:
         "devkit api history",
     )
 
-    console.print(
-        "[devkit.primary]API TESTER[/devkit.primary]"
-    )
+    console.print("[devkit.primary]API TESTER[/devkit.primary]")
 
     console.print(api_table)
 
     console.print()
 
-    footer_hint(
-        "Use --help after any command for detailed options."
-    )
+    footer_hint("Use --help after any command for detailed options.")
+
 
 def run_interactive_menu() -> None:
     """Run the main interactive DevKit command center."""
@@ -782,13 +722,9 @@ def run_interactive_menu() -> None:
         show_banner()
         show_menu()
 
-        footer_hint(
-            "Enter a number to run a command · 0 to exit"
-        )
+        footer_hint("Enter a number to run a command · 0 to exit")
 
-        choice = typer.prompt(
-            "\nChoose a command"
-        )
+        choice = typer.prompt("\nChoose a command")
 
         # -----------------------------------------------------
         # Project Information
@@ -910,9 +846,7 @@ def run_interactive_menu() -> None:
             console.clear()
 
             console.print(
-                "\n[devkit.success]"
-                "✓ DevKit session closed."
-                "[/devkit.success]\n"
+                "\n[devkit.success]" "✓ DevKit session closed." "[/devkit.success]\n"
             )
 
             break

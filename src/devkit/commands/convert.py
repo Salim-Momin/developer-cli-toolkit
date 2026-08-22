@@ -14,10 +14,8 @@ from devkit.terminal.components import (
 )
 from devkit.terminal.theme import console
 
+convert_app = typer.Typer(help="Convert developer data formats.")
 
-convert_app = typer.Typer(
-    help="Convert developer data formats."
-)
 
 @convert_app.command("json-to-yaml")
 def json_to_yaml(
@@ -51,14 +49,10 @@ def json_to_yaml(
             )
 
         except (PermissionError, OSError) as exc:
-            error(
-                f"Could not write output file: {exc}"
-            )
+            error(f"Could not write output file: {exc}")
             raise typer.Exit(code=1)
 
-        success(
-            f"Created {output}."
-        )
+        success(f"Created {output}.")
 
         return
 
@@ -74,6 +68,7 @@ def json_to_yaml(
             line_numbers=True,
         )
     )
+
 
 @convert_app.command("yaml-to-json")
 def yaml_to_json(
@@ -114,14 +109,10 @@ def yaml_to_json(
             )
 
         except (PermissionError, OSError) as exc:
-            error(
-                f"Could not write output file: {exc}"
-            )
+            error(f"Could not write output file: {exc}")
             raise typer.Exit(code=1)
 
-        success(
-            f"Created {output}."
-        )
+        success(f"Created {output}.")
 
         return
 

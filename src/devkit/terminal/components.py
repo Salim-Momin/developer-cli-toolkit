@@ -1,54 +1,36 @@
 from contextlib import contextmanager
-from pathlib import Path
 
-from rich.panel import Panel
 from rich.rule import Rule
 from rich.table import Table
-from rich.text import Text
 
 from devkit.terminal.theme import console
 
 
-def show_banner() -> None:
-    """Display the DevKit command-center banner."""
-
-    project = Path.cwd().name
-
-    content = Text()
-
-    content.append(
-        "⚡ DEVKIT\n",
-        style="bold cyan",
-    )
-
-    content.append(
-        "Developer Command Center\n",
-        style="bold white",
-    )
-
-    content.append("\n")
-
-    content.append(
-        "PROJECT   ",
-        style="bright_black",
-    )
-
-    content.append(
-        project,
-        style="cyan",
-    )
-
-    console.print()
+def show_banner():
 
     console.print(
-        Panel(
-            content,
-            border_style="cyan",
-            padding=(1, 4),
-            subtitle="[dim]v0.1.0[/dim]",
-        )
-    )
+        """
+[bold cyan]
+██████╗ ███████╗██╗   ██╗██╗  ██╗██╗████████╗
+██╔══██╗██╔════╝██║   ██║██║ ██╔╝██║╚══██╔══╝
+██║  ██║█████╗  ██║   ██║█████╔╝ ██║   ██║
+██║  ██║██╔══╝  ╚██╗ ██╔╝██╔═██╗ ██║   ██║
+██████╔╝███████╗ ╚████╔╝ ██║  ██╗██║   ██║
+╚═════╝ ╚══════╝  ╚═══╝  ╚═╝  ╚═╝╚═╝   ╚═╝
+[/bold cyan]
 
+[bold white]
+Developer CLI Toolkit
+[/bold white]
+
+[dim]
+Build • Debug • Analyze • Automate
+
+DevKit v0.1.0
+[/dim]
+
+"""
+    )
 
 def section_title(
     title: str,

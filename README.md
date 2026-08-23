@@ -91,3 +91,19 @@ Test APIs directly from terminal:
 git clone https://github.com/YOUR_USERNAME/developer-cli-toolkit.git
 
 cd developer-cli-toolkit
+
+## 📸 Screenshots
+
+### DevKit Home
+
+![Home](docs/screenshots/home.png)
+
+
+### Project Analyzer
+
+![Project](docs/screenshots/project.png)
+
+
+### Git Toolkit
+
+![Git](docs/screenshots/git.png)

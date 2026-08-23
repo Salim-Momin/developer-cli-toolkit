@@ -18,11 +18,9 @@ def show_banner():
 ██████╔╝███████╗ ╚████╔╝ ██║  ██╗██║   ██║
 ╚═════╝ ╚══════╝  ╚═══╝  ╚═╝  ╚═╝╚═╝   ╚═╝
 [/bold cyan]
-
 [bold white]
 Developer CLI Toolkit
 [/bold white]
-
 [dim]
 Build • Debug • Analyze • Automate
 

@@ -39,14 +39,9 @@ def show_menu() -> None:
     Display DevKit main interactive menu.
     """
 
-    console.print(
-        "[devkit.secondary]"
-        "PROJECT"
-        "[/devkit.secondary]"
-    )
+    console.print("[devkit.secondary]" "PROJECT" "[/devkit.secondary]")
 
     project_table = build_menu_table()
-
 
     project_table.add_row(
         "1",
@@ -68,23 +63,13 @@ def show_menu() -> None:
         "🌳 Project Tree",
     )
 
-
     console.print(project_table)
-
-
 
     console.print()
 
-
-    console.print(
-        "[devkit.secondary]"
-        "DEVELOPER TOOLS"
-        "[/devkit.secondary]"
-    )
-
+    console.print("[devkit.secondary]" "DEVELOPER TOOLS" "[/devkit.secondary]")
 
     tools_table = build_menu_table()
-
 
     tools_table.add_row(
         "5",
@@ -111,47 +96,32 @@ def show_menu() -> None:
         "📚 Command Reference",
     )
 
-
     console.print(tools_table)
-
-
 
     console.print()
 
-
-    console.print(
-        "[devkit.secondary]"
-        "COMING SOON"
-        "[/devkit.secondary]"
-    )
-
+    console.print("[devkit.secondary]" "COMING SOON" "[/devkit.secondary]")
 
     future_table = build_menu_table()
-
 
     future_table.add_row(
         "9",
         "[dim]🤖 AI Assistant[/dim]",
     )
 
-
     console.print(future_table)
-
-
 
     console.print()
 
-
     exit_table = build_menu_table()
-
 
     exit_table.add_row(
         "0",
         "❌ Exit",
     )
 
-
     console.print(exit_table)
+
 
 def run_search_menu() -> None:
     """
@@ -165,46 +135,28 @@ def run_search_menu() -> None:
         "Search source code and filenames inside the current project.",
     )
 
-    query = typer.prompt(
-        "Search query"
-    )
+    query = typer.prompt("Search query")
 
     console.print()
 
-    console.print(
-        "1  Text Search"
-    )
+    console.print("1  Text Search")
 
-    console.print(
-        "2  Filename Search"
-    )
+    console.print("2  Filename Search")
 
-    console.print(
-        "0  Back"
-    )
+    console.print("0  Back")
 
-
-    mode = typer.prompt(
-        "\nChoose search mode"
-    )
-
+    mode = typer.prompt("\nChoose search mode")
 
     if mode == "0":
         return
-
 
     if mode not in {
         "1",
         "2",
     }:
-        console.print(
-            "[devkit.error]"
-            "✗ Invalid search mode."
-            "[/devkit.error]"
-        )
+        console.print("[devkit.error]" "✗ Invalid search mode." "[/devkit.error]")
 
         return
-
 
     extension = typer.prompt(
         "File extension filter (optional)",
@@ -212,9 +164,7 @@ def run_search_menu() -> None:
         show_default=False,
     )
 
-
     use_regex = False
-
 
     if mode == "1":
 
@@ -223,11 +173,7 @@ def run_search_menu() -> None:
             default="n",
         ).lower()
 
-
-        use_regex = (
-            regex_choice == "y"
-        )
-
+        use_regex = regex_choice == "y"
 
     search_text(
         query=query,
@@ -239,7 +185,6 @@ def run_search_menu() -> None:
     )
 
 
-
 def run_git_menu() -> None:
     """
     Run Git Toolkit submenu.
@@ -247,15 +192,12 @@ def run_git_menu() -> None:
 
     console.clear()
 
-
     section_title(
         "🌿 Git Toolkit",
         "Inspect repository state, history, remotes and synchronization.",
     )
 
-
     git_table = build_menu_table()
-
 
     options = [
         ("1", "Repository Status"),
@@ -269,74 +211,47 @@ def run_git_menu() -> None:
         ("0", "Back"),
     ]
 
-
     for key, value in options:
         git_table.add_row(
             key,
             value,
         )
 
+    console.print(git_table)
 
-    console.print(
-        git_table
-    )
+    footer_hint("Choose a Git tool · 0 to return")
 
-
-    footer_hint(
-        "Choose a Git tool · 0 to return"
-    )
-
-
-    choice = typer.prompt(
-        "\nChoose Git command"
-    )
-
+    choice = typer.prompt("\nChoose Git command")
 
     if choice == "1":
         git_status()
 
-
     elif choice == "2":
         git_changes()
-
 
     elif choice == "3":
         git_branches()
 
-
     elif choice == "4":
-        git_log(
-            limit=10
-        )
-
+        git_log(limit=10)
 
     elif choice == "5":
         git_summary()
 
-
     elif choice == "6":
         git_remote()
-
 
     elif choice == "7":
         git_sync()
 
-
     elif choice == "8":
         git_health()
-
 
     elif choice == "0":
         return
 
-
     else:
-        console.print(
-            "[devkit.error]"
-            "✗ Invalid Git option."
-            "[/devkit.error]"
-        )
-
+        console.print("[devkit.error]" "✗ Invalid Git option." "[/devkit.error]")
 
 
 def run_api_menu() -> None:
@@ -346,15 +261,12 @@ def run_api_menu() -> None:
 
     console.clear()
 
-
     section_title(
         "🌐 API Tester",
         "Send and inspect HTTP requests from terminal.",
     )
 
-
     api_table = build_menu_table()
-
 
     options = [
         ("1", "GET Request"),
@@ -365,32 +277,20 @@ def run_api_menu() -> None:
         ("0", "Back"),
     ]
 
-
     for key, value in options:
         api_table.add_row(
             key,
             value,
         )
 
+    console.print(api_table)
 
-    console.print(
-        api_table
-    )
+    footer_hint("Choose HTTP method · 0 to return")
 
-
-    footer_hint(
-        "Choose HTTP method · 0 to return"
-    )
-
-
-    choice = typer.prompt(
-        "\nChoose HTTP method"
-    )
-
+    choice = typer.prompt("\nChoose HTTP method")
 
     if choice == "0":
         return
-
 
     if choice not in {
         "1",
@@ -400,20 +300,11 @@ def run_api_menu() -> None:
         "5",
     }:
 
-        console.print(
-            "[devkit.error]"
-            "✗ Invalid API option."
-            "[/devkit.error]"
-        )
+        console.print("[devkit.error]" "✗ Invalid API option." "[/devkit.error]")
 
         return
 
-
-
-    url = typer.prompt(
-        "Request URL"
-    )
-
+    url = typer.prompt("Request URL")
 
     if choice == "1":
 
@@ -426,7 +317,6 @@ def run_api_menu() -> None:
             show_headers=False,
         )
 
-
     elif choice == "2":
 
         body = typer.prompt(
@@ -435,14 +325,12 @@ def run_api_menu() -> None:
             show_default=False,
         )
 
-
         api_post(
             url=url,
             json_body=body or None,
             header=None,
             timeout=10.0,
         )
-
 
     elif choice == "3":
 
@@ -452,14 +340,12 @@ def run_api_menu() -> None:
             show_default=False,
         )
 
-
         api_put(
             url=url,
             json_body=body or None,
             header=None,
             timeout=10.0,
         )
-
 
     elif choice == "4":
 
@@ -469,14 +355,12 @@ def run_api_menu() -> None:
             show_default=False,
         )
 
-
         api_patch(
             url=url,
             json_body=body or None,
             header=None,
             timeout=10.0,
         )
-
 
     elif choice == "5":
 
@@ -485,7 +369,6 @@ def run_api_menu() -> None:
             header=None,
             timeout=10.0,
         )
-
 
 
 def pause_menu() -> None:
@@ -501,6 +384,7 @@ def pause_menu() -> None:
         show_default=False,
     )
 
+
 def show_command_reference() -> None:
     """
     Display all DevKit commands.
@@ -513,9 +397,7 @@ def show_command_reference() -> None:
         "All available commands grouped by tool.",
     )
 
-
     sections = {
-
         "PROJECT TOOLS": [
             "devkit project info",
             "devkit project stats",
@@ -524,21 +406,15 @@ def show_command_reference() -> None:
             "devkit project tree -d 2",
             "devkit project tree --no-files",
         ],
-
-
         "SMART SEARCH": [
             'devkit search "TODO"',
             'devkit search "import" -e py',
             'devkit search "project" -f',
             'devkit search "TODO|FIXME" -r',
         ],
-
-
         "ENVIRONMENT DOCTOR": [
             "devkit doctor",
         ],
-
-
         "GIT TOOLKIT": [
             "devkit git status",
             "devkit git changes",
@@ -549,23 +425,17 @@ def show_command_reference() -> None:
             "devkit git sync",
             "devkit git health",
         ],
-
-
         "JSON TOOLS": [
             "devkit json validate file.json",
             "devkit json format file.json",
             "devkit json minify file.json",
             "devkit json inspect file.json",
         ],
-
-
         "YAML TOOLS": [
             "devkit yaml validate file.yaml",
             "devkit yaml format file.yaml",
             "devkit yaml inspect file.yaml",
         ],
-
-
         "API TESTER": [
             "devkit api get URL",
             "devkit api post URL",
@@ -575,16 +445,11 @@ def show_command_reference() -> None:
         ],
     }
 
-
     for title, commands in sections.items():
 
-        console.print(
-            f"\n[devkit.primary]{title}[/devkit.primary]"
-        )
-
+        console.print(f"\n[devkit.primary]{title}[/devkit.primary]")
 
         table = build_menu_table()
-
 
         for command in commands:
 
@@ -593,14 +458,9 @@ def show_command_reference() -> None:
                 command,
             )
 
-
         console.print(table)
 
-
-    footer_hint(
-        "Use --help after any command for more options."
-    )
-
+    footer_hint("Use --help after any command for more options.")
 
 
 def run_interactive_menu() -> None:
@@ -616,17 +476,12 @@ def run_interactive_menu() -> None:
 
         show_menu()
 
-
-        footer_hint(
-            "Enter number · h for help · q to quit"
-        )
-
+        footer_hint("Enter number · h for help · q to quit")
 
         choice = typer.prompt(
             "\nChoose a command",
             default="0",
         )
-
 
         # Help shortcut
 
@@ -638,15 +493,11 @@ def run_interactive_menu() -> None:
 
             continue
 
-
-
         # Quit shortcut
 
         if choice.lower() == "q":
 
             break
-
-
 
         # Project Info
 
@@ -658,8 +509,6 @@ def run_interactive_menu() -> None:
 
             pause_menu()
 
-
-
         elif choice == "2":
 
             console.clear()
@@ -668,8 +517,6 @@ def run_interactive_menu() -> None:
 
             pause_menu()
 
-
-
         elif choice == "3":
 
             console.clear()
@@ -677,8 +524,6 @@ def run_interactive_menu() -> None:
             project_health()
 
             pause_menu()
-
-
 
         elif choice == "4":
 
@@ -693,15 +538,11 @@ def run_interactive_menu() -> None:
 
             pause_menu()
 
-
-
         elif choice == "5":
 
             run_search_menu()
 
             pause_menu()
-
-
 
         elif choice == "6":
 
@@ -711,15 +552,11 @@ def run_interactive_menu() -> None:
 
             pause_menu()
 
-
-
         elif choice == "7":
 
             run_git_menu()
 
             pause_menu()
-
-
 
         elif choice == "8":
 
@@ -727,18 +564,14 @@ def run_interactive_menu() -> None:
 
             pause_menu()
 
-
-
         elif choice == "9":
 
             console.clear()
-
 
             section_title(
                 "🤖 AI Assistant",
                 "Future DevKit AI features.",
             )
-
 
             console.print(
                 "[devkit.warning]"
@@ -746,10 +579,7 @@ def run_interactive_menu() -> None:
                 "[/devkit.warning]"
             )
 
-
             pause_menu()
-
-
 
         elif choice == "10":
 
@@ -757,28 +587,18 @@ def run_interactive_menu() -> None:
 
             pause_menu()
 
-
-
         elif choice == "0":
 
             console.clear()
 
             console.print(
-                "\n[devkit.success]"
-                "✓ DevKit session closed."
-                "[/devkit.success]\n"
+                "\n[devkit.success]" "✓ DevKit session closed." "[/devkit.success]\n"
             )
 
             break
 
-
-
         else:
 
-            console.print(
-                "[devkit.error]"
-                "✗ Invalid option."
-                "[/devkit.error]"
-            )
+            console.print("[devkit.error]" "✗ Invalid option." "[/devkit.error]")
 
             pause_menu()

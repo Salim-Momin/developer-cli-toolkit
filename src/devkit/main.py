@@ -103,7 +103,9 @@ def hello():
 def version():
     """Show the installed DevKit version."""
     console.print("[bold]Developer CLI Toolkit[/bold]")
-    console.print("Version: 0.1.0")
+    from devkit.version import VERSION
+
+    console.print(f"Version: {VERSION}")
 
 
 if __name__ == "__main__":

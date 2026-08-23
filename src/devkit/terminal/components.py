@@ -8,8 +8,7 @@ from devkit.terminal.theme import console
 
 def show_banner():
 
-    console.print(
-        """
+    console.print("""
 [bold cyan]
 ██████╗ ███████╗██╗   ██╗██╗  ██╗██╗████████╗
 ██╔══██╗██╔════╝██║   ██║██║ ██╔╝██║╚══██╔══╝
@@ -27,8 +26,8 @@ Build • Debug • Analyze • Automate
 DevKit v0.1.0
 [/dim]
 
-"""
-    )
+""")
+
 
 def section_title(
     title: str,

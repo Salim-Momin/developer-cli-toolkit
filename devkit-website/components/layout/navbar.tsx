@@ -2,42 +2,58 @@
 
 import { FaGithub } from "react-icons/fa";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 
 const links = [
   {
-    name:"Features",
-    href:"#features"
+    name: "Features",
+    href: "#features",
   },
   {
-    name:"Docs",
-    href:"#docs"
+    name: "Terminal",
+    href: "#terminal",
   },
   {
-    name:"Install",
-    href:"#install"
-  }
+    name: "Docs",
+    href: "#docs",
+  },
+  {
+    name: "Install",
+    href: "#install",
+  },
 ];
 
 
-export default function Navbar(){
+const DEVKIT_LOGO = `
+██████╗ ███████╗██╗   ██╗██╗  ██╗██╗████████╗
+██╔══██╗██╔════╝██║   ██║██║ ██╔╝██║╚══██╔══╝
+██║  ██║█████╗  ██║   ██║█████╔╝ ██║   ██║
+██║  ██║██╔══╝  ╚██╗ ██╔╝██╔═██╗ ██║   ██║
+██████╔╝███████╗ ╚████╔╝ ██║  ██╗██║   ██║
+╚═════╝ ╚══════╝  ╚═══╝  ╚═╝  ╚═╝╚═╝   ╚═╝
+`;
 
-return(
+
+export default function Navbar() {
+
+
+return (
 
 <motion.header
 
 initial={{
+opacity:0,
 y:-20,
-opacity:0
 }}
 
 animate={{
+opacity:1,
 y:0,
-opacity:1
 }}
 
 transition={{
-duration:0.5
+duration:0.5,
 }}
 
 className="
@@ -56,60 +72,121 @@ backdrop-blur-xl
 
 
 <div
+
 className="
-max-w-6xl
+max-w-7xl
 mx-auto
 px-6
-h-16
+h-20
 flex
 items-center
 justify-between
 "
+
 >
 
 
-{/* Logo */}
+{/* LOGO */}
 
-<a
-href="/"
-className="
-font-mono
-text-white
-font-semibold
-tracking-tight
-"
->
+<Link href="/">
 
-<span className="text-green-400">
-$
-</span>
+<motion.div
 
-&nbsp;devkit
+whileHover={{
+scale:1.05,
+}}
 
-</a>
+transition={{
+duration:0.2,
+}}
 
-
-
-
-{/* Navigation */}
-
-<nav
 className="
 hidden
-md:flex
+md:block
+font-mono
+text-[7px]
+leading-[7px]
+text-cyan-400
+drop-shadow-[0_0_15px_rgba(34,211,238,0.7)]
+hover:text-white
+transition
+duration-300
+cursor-pointer
+"
+
+>
+
+<pre>
+
+{DEVKIT_LOGO}
+
+</pre>
+
+
+</motion.div>
+
+
+
+{/* Mobile Logo */}
+
+<div
+
+className="
+md:hidden
+font-mono
+text-green-400
+text-sm
+"
+
+>
+
+devkit_
+
+</div>
+
+
+</Link>
+
+
+
+
+
+{/* NAV LINKS */}
+
+<nav
+
+className="
+hidden
+lg:flex
 items-center
 gap-8
 font-mono
 text-sm
 "
+
 >
 
+
 {
+
 links.map((link)=>(
 
-<a
+
+<motion.div
 
 key={link.name}
+
+whileHover={{
+y:-2,
+}}
+
+transition={{
+duration:0.2,
+}}
+
+>
+
+<Link
 
 href={link.href}
 
@@ -123,24 +200,34 @@ transition
 
 {link.name}
 
-</a>
+</Link>
+
+
+</motion.div>
+
 
 ))
 
 }
+
 
 </nav>
 
 
 
 
-{/* Github */}
 
-<a
+{/* RIGHT SIDE */}
 
-href="https://github.com"
+<motion.a
+
+href="https://github/Salim-Momin.com"
 
 target="_blank"
+
+whileHover={{
+scale:1.08,
+}}
 
 className="
 flex
@@ -155,11 +242,21 @@ transition
 
 >
 
+
 <FaGithub size={16}/>
+
+
+<span className="
+hidden
+sm:block
+">
 
 GitHub
 
-</a>
+</span>
+
+
+</motion.a>
 
 
 
@@ -169,6 +266,6 @@ GitHub
 </motion.header>
 
 
-)
+);
 
 }

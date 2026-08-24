@@ -1,6 +1,7 @@
 import Hero from "@/components/sections/hero";
 import Features from "@/components/sections/features";
-import Navbar from "@/components/layout/navbar";
+import TerminalPlayground from "@/components/sections/terminal";
+
 
 export default function Home(){
 
@@ -8,11 +9,11 @@ return(
 
 <main>
 
-<Navbar />
-
 <Hero/>
 
 <Features/>
+
+<TerminalPlayground/>
 
 </main>
 

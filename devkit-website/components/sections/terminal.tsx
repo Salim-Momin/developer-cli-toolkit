@@ -1,218 +1,390 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useRef } from "react";
+
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useSpring,
+  useMotionValue,
+} from "framer-motion";
+
 import { TypeAnimation } from "react-type-animation";
-import { Terminal } from "lucide-react";
 
 
-const commands = {
 
-"project info":
-`
-Project:
+const banner = `
+██████╗ ███████╗██╗   ██╗██╗  ██╗██╗████████╗
+██╔══██╗██╔════╝██║   ██║██║ ██╔╝██║╚══██╔══╝
+██║  ██║█████╗  ██║   ██║█████╔╝ ██║   ██║
+██║  ██║██╔══╝  ╚██╗ ██╔╝██╔═██╗ ██║   ██║
+██████╔╝███████╗ ╚████╔╝ ██║  ██╗██║   ██║
+╚═════╝ ╚══════╝  ╚═══╝  ╚═╝  ╚═╝╚═╝   ╚═╝
+`;
+
+
+
+const output = `
+
 Developer CLI Toolkit
 
-Language:
-Python
+Build • Debug • Analyze • Automate
 
-Files:
-124
 
-Health:
-98/100
-`,
+DevKit v0.1.0
 
-"git health":
-`
-Repository:
-developer-cli-toolkit
 
-Branch:
-main
+PROJECT
 
-Changes:
-Clean
+1       🔍 Project Information
+2       📊 Project Statistics
+3       ❤️ Project Health
+4       🌳 Project Tree
 
-Health:
-100%
-`,
 
-"doctor":
-`
-Environment Check
+DEVELOPER TOOLS
 
-✓ Python installed
-✓ Git installed
-✓ Node installed
+5       🔎 Smart Search
+6       🩺 Environment Doctor
+7       🌿 Git Toolkit
+8       🌐 API Tester
 
-System:
-Healthy
-`,
 
-"api get":
-`
-HTTP Request
+9       🤖 AI Assistant
 
-Status:
-200 OK
+10      📚 Command Reference
 
-Response:
-Success
-`
 
-};
+0       ❌ Exit
 
 
 
-const commandList = Object.keys(commands);
+Enter number · h for help · q to quit
+
+
+Choose a command [0]:
+
+`;
 
 
 
-export default function TerminalPlayground(){
+
+export default function Terminal(){
 
 
-const [output,setOutput] = useState(
-"Waiting for command..."
+
+const terminalRef =
+useRef<HTMLDivElement>(null);
+
+
+
+const {
+
+scrollYProgress
+
+}=useScroll({
+
+target:terminalRef,
+
+offset:[
+"start end",
+"center center"
+]
+
+});
+
+
+
+const progress =
+useSpring(
+scrollYProgress,
+{
+
+stiffness:90,
+
+damping:25,
+
+mass:.5
+
+}
 );
+
+
+
+
+
+const scale =
+useTransform(
+
+progress,
+
+[0,1],
+
+[0.7,1]
+
+);
+
+
+
+const rotateX =
+useTransform(
+
+progress,
+
+[0,1],
+
+[35,0]
+
+);
+
+
+
+const translateY =
+useTransform(
+
+progress,
+
+[0,1],
+
+[160,0]
+
+);
+
+
+
+const opacity =
+useTransform(
+
+progress,
+
+[0,1],
+
+[0,1]
+
+);
+
+
+
+
+
+/*
+Mouse camera
+*/
+
+
+const mouseX =
+useMotionValue(0);
+
+
+const mouseY =
+useMotionValue(0);
+
+
+
+const cameraX =
+useSpring(
+
+mouseX,
+
+{
+stiffness:120,
+damping:20
+
+}
+
+);
+
+
+
+const cameraY =
+useSpring(
+
+mouseY,
+
+{
+stiffness:120,
+damping:20
+
+}
+
+);
+
+
+
+
+
+function handleMouse(
+
+e:React.MouseEvent<HTMLDivElement>
+
+){
+
+
+const box =
+e.currentTarget.getBoundingClientRect();
+
+
+
+const x =
+(e.clientX-box.left)
+/box.width;
+
+
+const y =
+(e.clientY-box.top)
+/box.height;
+
+
+
+mouseX.set(
+
+(x-.5)*8
+
+);
+
+
+mouseY.set(
+
+(y-.5)*-8
+
+);
+
+
+}
+
+
+
+
+
 
 
 return (
 
 <section
-id="terminal"
+
+ref={terminalRef}
 
 className="
+relative
 py-32
 max-w-6xl
 mx-auto
 px-6
 "
->
-
-
-{/* Section Title */}
-
-<motion.div
-
-initial={{
-opacity:0,
-y:40
-}}
-
-whileInView={{
-opacity:1,
-y:0
-}}
-
-viewport={{
-once:true,
-amount:0.3
-}}
-
-transition={{
-duration:0.7
-}}
-
-className="
-mb-14
-"
 
 >
 
 
-<p
-className="
-font-mono
-text-sm
-text-zinc-500
-"
->
-
-02 / TERMINAL
-
-</p>
 
 
-<h2
-className="
-mt-4
-text-4xl
-md:text-5xl
-font-semibold
-text-white
-"
-
->
-
-Experience DevKit
-
-inside your browser.
-
-</h2>
-
-
-<p
-className="
-mt-4
-text-zinc-400
-max-w-xl
-"
->
-
-A simulated terminal environment
-showing how DevKit works.
-
-</p>
-
-
-</motion.div>
-
-
-
-
-
-{/* Terminal Window */}
+{/* Cinematic Glow */}
 
 
 <motion.div
 
-initial={{
-opacity:0,
-y:80,
-scale:0.95
-}}
 
-whileInView={{
-opacity:1,
-y:0,
-scale:1
-}}
+style={{
 
-viewport={{
-once:true,
-amount:0.2
-}}
+scale:useTransform(
+progress,
+[0,1],
+[0.5,1.3]
+)
 
-transition={{
-duration:0.8,
-ease:"easeOut"
 }}
 
 
 className="
-rounded-2xl
-border
-border-zinc-800
-bg-[#0D0D0D]
+absolute
+left-1/2
+top-1/2
+-translate-x-1/2
+-translate-y-1/2
+
+w-[600px]
+
+h-[400px]
+
+rounded-full
+
+bg-cyan-500/20
+
+blur-[160px]
+
+"
+
+/>
+
+
+
+
+
+
+<motion.div
+
+
+onMouseMove={handleMouse}
+
+
+
+style={{
+
+scale,
+
+rotateX,
+
+y:translateY,
+
+opacity,
+
+rotateY:cameraX,
+
+transformPerspective:1400
+
+}}
+
+
+
+
+whileHover={{
+
+scale:1.04
+
+}}
+
+
+
+
+className="
+
+relative
+
+rounded-3xl
+
 overflow-hidden
-shadow-2xl
+
+border
+
+border-zinc-800
+
+bg-[#050505]
+
+shadow-[0_70px_150px_rgba(0,0,0,.8)]
+
 "
 
 >
+
+
+
+
+
 
 
 {/* Terminal Header */}
+
+
 
 <div
 
@@ -220,7 +392,7 @@ className="
 flex
 items-center
 gap-3
-px-5
+px-6
 py-4
 border-b
 border-zinc-800
@@ -232,7 +404,7 @@ border-zinc-800
 <motion.span
 
 animate={{
-opacity:[1,0.4,1]
+y:[0,-3,0]
 }}
 
 transition={{
@@ -250,15 +422,16 @@ bg-red-500
 />
 
 
+
 <motion.span
 
 animate={{
-opacity:[1,0.4,1]
+y:[0,-3,0]
 }}
 
 transition={{
 duration:2,
-delay:0.3,
+delay:.3,
 repeat:Infinity
 }}
 
@@ -266,21 +439,22 @@ className="
 h-3
 w-3
 rounded-full
-bg-yellow-500
+bg-yellow-400
 "
 
 />
 
 
+
 <motion.span
 
 animate={{
-opacity:[1,0.4,1]
+y:[0,-3,0]
 }}
 
 transition={{
 duration:2,
-delay:0.6,
+delay:.6,
 repeat:Infinity
 }}
 
@@ -288,7 +462,7 @@ className="
 h-3
 w-3
 rounded-full
-bg-green-500
+bg-green-400
 "
 
 />
@@ -296,12 +470,14 @@ bg-green-500
 
 
 <span
+
 className="
 ml-3
-font-mono
 text-xs
 text-zinc-500
+font-mono
 "
+
 >
 
 devkit-terminal
@@ -315,153 +491,75 @@ devkit-terminal
 
 
 
-{/* Terminal Body */}
+
+
+
+
+{/* Terminal Screen */}
+
 
 
 <div
 
 className="
-p-6
+p-8
 font-mono
 "
 
 >
 
 
-{/* Command Buttons */}
 
 
-<div
+<pre
+
 className="
-flex
-flex-wrap
-gap-3
-mb-10
+text-cyan-400
+text-[10px]
+md:text-sm
+leading-tight
 "
 
 >
 
+{banner}
 
-{
-
-commandList.map((command,index)=>(
-
-
-<motion.button
-
-key={command}
-
-initial={{
-opacity:0,
-y:20
-}}
-
-whileInView={{
-opacity:1,
-y:0
-}}
-
-viewport={{
-once:true
-}}
-
-transition={{
-delay:index*0.15
-}}
+</pre>
 
 
-whileHover={{
-scale:1.05
-}}
 
 
-onClick={()=>setOutput(commands[command as keyof typeof commands])}
 
+
+<div
 
 className="
+mt-6
+rounded-xl
 border
 border-zinc-800
-rounded-lg
-px-4
-py-2
-text-sm
-text-zinc-400
-hover:text-cyan-400
-hover:border-cyan-400
-transition
+bg-black/60
+p-6
 "
 
 >
-
-$ devkit {command}
-
-</motion.button>
-
-
-))
-
-}
-
-
-</div>
-
-
-
-
-
-{/* Terminal Output */}
-
-
-<div
-
-className="
-rounded-lg
-bg-black
-border
-border-zinc-900
-p-5
-min-h-[220px]
-"
-
->
-
-
-<div
-className="
-text-green-400
-mb-4
-"
-
->
-
-$ devkit execute
-
-<span
-className="
-animate-pulse
-"
->
-_
-</span>
-
-</div>
-
 
 
 <TypeAnimation
 
-key={output}
 
 sequence={[
 
-output,
-5000
+output
 
 ]}
 
-speed={35}
 
-cursor={false}
+speed={15}
+
+
+cursor={true}
+
 
 />
 
@@ -470,7 +568,12 @@ cursor={false}
 
 
 
+
+
+
 </div>
+
+
 
 
 </motion.div>
@@ -479,7 +582,6 @@ cursor={false}
 
 </section>
 
-
-)
+);
 
 }

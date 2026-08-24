@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useRef } from "react";
 
 import {
   motion,
@@ -13,7 +13,6 @@ import {
 import { TypeAnimation } from "react-type-animation";
 
 
-
 const banner = `
 ██████╗ ███████╗██╗   ██╗██╗  ██╗██╗████████╗
 ██╔══██╗██╔════╝██║   ██║██║ ██╔╝██║╚══██╔══╝
@@ -24,9 +23,7 @@ const banner = `
 `;
 
 
-
 const output = `
-
 Developer CLI Toolkit
 
 Build • Debug • Analyze • Automate
@@ -59,30 +56,27 @@ DEVELOPER TOOLS
 0       ❌ Exit
 
 
-
 Enter number · h for help · q to quit
 
 
 Choose a command [0]:
-
 `;
 
 
 
-
 export default function Terminal(){
-
-
 
 const terminalRef =
 useRef<HTMLDivElement>(null);
 
 
 
+/*
+Scroll camera animation
+*/
+
 const {
-
 scrollYProgress
-
 }=useScroll({
 
 target:terminalRef,
@@ -96,72 +90,45 @@ offset:[
 
 
 
-const progress =
+const smooth =
 useSpring(
 scrollYProgress,
 {
-
-stiffness:90,
-
-damping:25,
-
-mass:.5
-
+stiffness:140,
+damping:20,
+mass:0.3
 }
 );
 
-
-
-
-
 const scale =
 useTransform(
-
-progress,
-
+smooth,
 [0,1],
-
-[0.7,1]
-
+[0.85,1]
 );
-
-
-
-const rotateX =
-useTransform(
-
-progress,
-
-[0,1],
-
-[35,0]
-
-);
-
 
 
 const translateY =
 useTransform(
-
-progress,
-
+smooth,
 [0,1],
-
-[160,0]
-
+[70,0]
 );
 
 
 
+const scrollRotate =
+useTransform(
+smooth,
+[0,1],
+[30,0]
+);
+
 const opacity =
 useTransform(
-
-progress,
-
+smooth,
 [0,1],
-
 [0,1]
-
 );
 
 
@@ -169,93 +136,64 @@ progress,
 
 
 /*
-Mouse camera
+Mouse camera movement
 */
 
 
 const mouseX =
 useMotionValue(0);
 
-
 const mouseY =
 useMotionValue(0);
 
 
-
-const cameraX =
+const rotateY =
 useSpring(
-
 mouseX,
-
 {
-stiffness:120,
-damping:20
-
+stiffness:150,
+damping:20,
+mass:0.4
 }
-
 );
 
 
-
-const cameraY =
+const rotateX =
 useSpring(
-
 mouseY,
-
 {
-stiffness:120,
-damping:20
-
+stiffness:150,
+damping:20,
+mass:0.4
 }
-
 );
-
-
-
 
 
 function handleMouse(
-
 e:React.MouseEvent<HTMLDivElement>
-
 ){
-
 
 const box =
 e.currentTarget.getBoundingClientRect();
 
 
-
 const x =
-(e.clientX-box.left)
-/box.width;
-
+e.clientX-box.left;
 
 const y =
-(e.clientY-box.top)
-/box.height;
-
+e.clientY-box.top;
 
 
 mouseX.set(
-
-(x-.5)*8
-
+(x-box.width/2)/18
 );
 
 
 mouseY.set(
-
-(y-.5)*-8
-
+-(y-box.height/2)/18
 );
 
-
 }
-
-
-
-
 
 
 
@@ -276,24 +214,19 @@ px-6
 >
 
 
-
-
-{/* Cinematic Glow */}
-
+{/* Background Glow */}
 
 <motion.div
-
 
 style={{
 
 scale:useTransform(
-progress,
+smooth,
 [0,1],
-[0.5,1.3]
+[0.5,1.4]
 )
 
 }}
-
 
 className="
 absolute
@@ -303,14 +236,13 @@ top-1/2
 -translate-y-1/2
 
 w-[600px]
-
 h-[400px]
-
-rounded-full
 
 bg-cyan-500/20
 
-blur-[160px]
+blur-[150px]
+
+rounded-full
 
 "
 
@@ -320,6 +252,12 @@ blur-[160px]
 
 
 
+<div
+style={{
+perspective:1400
+}}
+>
+
 
 <motion.div
 
@@ -327,32 +265,31 @@ blur-[160px]
 onMouseMove={handleMouse}
 
 
-
 style={{
 
 scale,
-
-rotateX,
 
 y:translateY,
 
 opacity,
 
-rotateY:cameraX,
+
+rotateX,
+
+
+rotateY,
+
 
 transformPerspective:1400
 
 }}
 
 
-
-
 whileHover={{
 
-scale:1.04
+scale:1.03
 
 }}
-
 
 
 
@@ -370,7 +307,7 @@ border-zinc-800
 
 bg-[#050505]
 
-shadow-[0_70px_150px_rgba(0,0,0,.8)]
+shadow-[0_70px_150px_rgba(0,0,0,.85)]
 
 "
 
@@ -378,12 +315,7 @@ shadow-[0_70px_150px_rgba(0,0,0,.8)]
 
 
 
-
-
-
-
-{/* Terminal Header */}
-
+{/* Header */}
 
 
 <div
@@ -401,84 +333,39 @@ border-zinc-800
 >
 
 
-<motion.span
-
-animate={{
-y:[0,-3,0]
-}}
-
-transition={{
-duration:2,
-repeat:Infinity
-}}
-
-className="
+<span className="
 h-3
 w-3
 rounded-full
 bg-red-500
-"
-
-/>
-
+animate-pulse
+"/>
 
 
-<motion.span
-
-animate={{
-y:[0,-3,0]
-}}
-
-transition={{
-duration:2,
-delay:.3,
-repeat:Infinity
-}}
-
-className="
+<span className="
 h-3
 w-3
 rounded-full
 bg-yellow-400
-"
-
-/>
-
+animate-pulse
+"/>
 
 
-<motion.span
-
-animate={{
-y:[0,-3,0]
-}}
-
-transition={{
-duration:2,
-delay:.6,
-repeat:Infinity
-}}
-
-className="
+<span className="
 h-3
 w-3
 rounded-full
 bg-green-400
-"
-
-/>
-
+animate-pulse
+"/>
 
 
-<span
-
-className="
+<span className="
 ml-3
 text-xs
 text-zinc-500
 font-mono
-"
-
->
+">
 
 devkit-terminal
 
@@ -492,16 +379,14 @@ devkit-terminal
 
 
 
-
-
-
-{/* Terminal Screen */}
-
+{/* Screen */}
 
 
 <div
 
 className="
+relative
+overflow-hidden
 p-8
 font-mono
 "
@@ -509,6 +394,113 @@ font-mono
 >
 
 
+{/* Scanlines */}
+
+<motion.div
+
+animate={{
+y:[
+"-100%",
+"100%"
+]
+}}
+
+transition={{
+
+duration:8,
+
+repeat:Infinity,
+
+ease:"linear"
+
+}}
+
+className="
+
+absolute
+
+inset-0
+
+z-20
+
+pointer-events-none
+
+opacity-[0.07]
+
+bg-[linear-gradient(
+transparent_50%,
+cyan_50%
+)]
+
+bg-[length:100%_5px]
+
+"
+
+/>
+
+
+
+{/* Reflection */}
+
+<motion.div
+
+animate={{
+
+x:[
+"-120%",
+"120%"
+]
+
+}}
+
+transition={{
+
+duration:5,
+
+repeat:Infinity,
+
+ease:"linear"
+
+}}
+
+className="
+
+absolute
+
+top-0
+
+left-0
+
+h-full
+
+w-1/3
+
+z-30
+
+pointer-events-none
+
+bg-gradient-to-r
+
+from-transparent
+
+via-white/10
+
+to-transparent
+
+skew-x-12
+
+"
+
+/>
+
+
+
+
+
+<div className="
+relative
+z-10
+">
 
 
 <pre
@@ -530,19 +522,52 @@ leading-tight
 
 
 
+<motion.div
 
-<div
+
+animate={{
+
+boxShadow:[
+
+"0 0 0px transparent",
+
+"0 0 35px rgba(0,255,255,.3)",
+
+"0 0 0px transparent"
+
+]
+
+}}
+
+transition={{
+
+duration:3,
+
+repeat:Infinity
+
+}}
+
 
 className="
-mt-6
+
+mt-8
+
 rounded-xl
+
 border
-border-zinc-800
-bg-black/60
+
+border-cyan-900
+
+bg-black/70
+
 p-6
+
+text-zinc-300
+
 "
 
 >
+
 
 
 <TypeAnimation
@@ -550,24 +575,45 @@ p-6
 
 sequence={[
 
+"Initializing DevKit...\n\n",
+
+1000,
+
+"Loading Project Analyzer...\n",
+
+700,
+
+"Loading Git Engine...\n",
+
+700,
+
+"Loading API Tester...\n",
+
+700,
+
+"Environment Check Complete ✓\n\n",
+
+800,
+
 output
 
 ]}
 
 
-speed={15}
+speed={18}
 
 
-cursor={true}
+cursor
 
 
 />
 
 
+</motion.div>
+
+
+
 </div>
-
-
-
 
 
 
@@ -578,6 +624,7 @@ cursor={true}
 
 </motion.div>
 
+</div>
 
 
 </section>

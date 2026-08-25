@@ -1,20 +1,17 @@
 import Hero from "@/components/sections/hero";
-import Features from "@/components/sections/features";
 import TerminalPlayground from "@/components/sections/terminal";
-
-
+import InstallSection from "@/components/install/InstallSection";
+import FeatureSection from "@/components/features/FeatureSection";
 export default function Home(){
 
 return(
 
-<main>
+<main className="relative z-10">
 
 <Hero/>
-
-<Features/>
-
 <TerminalPlayground/>
-
+<InstallSection />
+<FeatureSection/>
 </main>
 
 )

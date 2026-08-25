@@ -1,182 +1,246 @@
 "use client";
 
-import { TypeAnimation } from "react-type-animation";
 import { motion } from "framer-motion";
-import { Terminal} from "lucide-react";
+import { Terminal } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
 
 
 export default function Hero() {
 
+
 return (
 
 <section
+
 className="
+relative
 min-h-screen
+overflow-hidden
 flex
 items-center
 justify-center
-bg-[#09090B]
 px-6
 pt-24
 "
+
 >
 
+
+
+{/* BACKGROUND */}
+
+
+<div className="absolute inset-0">
+
+
+{/* radial glow */}
 
 <div
+
 className="
-w-full
-max-w-5xl
+absolute
+inset-0
+bg-[radial-gradient(circle_at_top,#06b6d420,transparent_60%)]
 "
->
+
+/>
 
 
-{/* Heading */}
+
+{/* grid */}
+
+<div
+
+className="
+absolute
+inset-0
+bg-[linear-gradient(rgba(255,255,255,.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.02)_1px,transparent_1px)]
+bg-[size:64px_64px]
+"
+
+/>
+
+
+
+
+
+{/* cyan glow */}
+
 
 <motion.div
 
-initial={{
-opacity:0,
-y:20
-}}
-
 animate={{
-opacity:1,
-y:0
+
+x:[
+-40,
+40,
+-40
+],
+
+y:[
+0,
+-30,
+0
+
+]
+
 }}
 
 transition={{
-duration:0.6
+
+duration:12,
+
+repeat:Infinity,
+
+ease:"easeInOut"
+
 }}
 
+
 className="
+absolute
+left-20
+top-20
+h-96
+w-96
+rounded-full
+bg-cyan-500/10
+blur-[160px]
+"
+
+/>
+
+
+
+
+
+{/* blue glow */}
+
+
+<motion.div
+
+animate={{
+
+x:[
+30,
+-30,
+30
+],
+
+y:[
+0,
+50,
+0
+
+]
+
+}}
+
+transition={{
+
+duration:15,
+
+repeat:Infinity,
+
+ease:"easeInOut"
+
+}}
+
+
+className="
+absolute
+right-0
+bottom-0
+h-[500px]
+w-[500px]
+rounded-full
+bg-blue-500/10
+blur-[180px]
+"
+
+/>
+
+
+
+</div>
+
+
+
+
+
+
+
+{/* HERO CONTENT */}
+
+
+
+<div
+
+className="
+relative
+z-10
+max-w-5xl
 text-center
-mb-12
 "
 
 >
 
 
-<div
+
+{/* badge */}
+
+
+
+<motion.div
+
+
+initial={{
+
+opacity:0,
+
+y:20
+
+}}
+
+
+animate={{
+
+opacity:1,
+
+y:0
+
+}}
+
+
+transition={{
+
+duration:.6
+
+}}
+
+
 className="
 inline-flex
 items-center
 gap-2
+rounded-full
 border
 border-zinc-800
-rounded-full
+bg-black/40
 px-4
 py-2
 text-sm
 text-zinc-400
-mb-6
+backdrop-blur
 "
+
 >
+
 
 <Terminal size={15}/>
 
+
 Developer CLI Toolkit
-
-</div>
-
-
-
-<h1
-className="
-text-5xl
-md:text-7xl
-font-semibold
-tracking-tight
-text-white
-"
->
-
-Powerful tools.
-
-<br/>
-
-Inside your
-
-<span className="
-text-zinc-500
-">
-terminal.
-</span>
-
-</h1>
-
-
-
-<p
-className="
-mt-6
-text-zinc-400
-max-w-xl
-mx-auto
-text-lg
-"
->
-
-Analyze projects, manage Git,
-test APIs and automate developer workflows
-without leaving your command line.
-
-</p>
-
-
-<div
-className="
-mt-8
-flex
-justify-center
-gap-4
-"
->
-
-
-<button
-className="
-px-5
-py-2.5
-rounded-lg
-bg-white
-text-black
-text-sm
-font-medium
-hover:bg-zinc-200
-transition
-"
->
-
-Install DevKit
-
-</button>
-
-
-<button
-className="
-flex
-items-center
-gap-2
-px-5
-py-2.5
-rounded-lg
-border
-border-zinc-800
-text-white
-hover:bg-zinc-900
-transition
-"
->
-
-<FaGithub size={16}/>
-
-GitHub
-
-</button>
-
-
-</div>
 
 
 </motion.div>
@@ -185,179 +249,278 @@ GitHub
 
 
 
-{/* Terminal Window */}
+
+
+{/* Heading */}
+
+
+<motion.h1
+
+
+initial={{
+
+opacity:0,
+
+y:40
+
+}}
+
+
+animate={{
+
+opacity:1,
+
+y:0
+
+}}
+
+
+transition={{
+
+duration:.8,
+
+delay:.1
+
+}}
+
+
+className="
+mt-8
+text-5xl
+font-semibold
+tracking-tight
+text-white
+md:text-7xl
+"
+
+>
+
+
+Powerful tools.
+
+
+<br/>
+
+
+Inside your
+
+
+<span
+
+className="
+text-zinc-500
+"
+
+>
+
+terminal.
+
+</span>
+
+
+
+</motion.h1>
+
+
+
+
+
+
+
+
+{/* Description */}
+
+
+
+<motion.p
+
+
+initial={{
+
+opacity:0
+
+}}
+
+
+animate={{
+
+opacity:1
+
+}}
+
+
+transition={{
+
+duration:.8,
+
+delay:.3
+
+}}
+
+
+
+className="
+mx-auto
+mt-6
+max-w-2xl
+text-lg
+leading-relaxed
+text-zinc-400
+"
+
+>
+
+
+Analyze projects, manage Git,
+test APIs and automate developer
+workflows without leaving your command line.
+
+
+
+</motion.p>
+
+
+
+
+
+
+
+
+{/* Buttons */}
+
 
 
 <motion.div
 
+
 initial={{
+
 opacity:0,
-scale:0.95
+
+y:20
+
 }}
+
 
 animate={{
+
 opacity:1,
-scale:1
+
+y:0
+
 }}
+
 
 transition={{
-duration:0.8
+
+duration:.8,
+
+delay:.5
+
 }}
 
+
 className="
-rounded-xl
-border
-border-zinc-800
-bg-[#0D0D0D]
-overflow-hidden
-shadow-2xl
+mt-10
+flex
+justify-center
+gap-4
 "
 
 >
 
 
-{/* Terminal Header */}
 
-<div
+<motion.button
+
+
+whileHover={{
+
+scale:1.05
+
+}}
+
+
+whileTap={{
+
+scale:.95
+
+}}
+
+
+
+className="
+rounded-xl
+bg-white
+px-6
+py-3
+text-sm
+font-medium
+text-black
+transition
+hover:bg-zinc-200
+"
+
+>
+
+
+Install DevKit
+
+
+</motion.button>
+
+
+
+
+
+
+
+<motion.button
+
+
+whileHover={{
+
+scale:1.05
+
+}}
+
+
+whileTap={{
+
+scale:.95
+
+}}
+
+
+
 className="
 flex
 items-center
 gap-2
-px-5
-py-3
-border-b
+rounded-xl
+border
 border-zinc-800
-"
->
-
-<span
-className="
-w-3
-h-3
-rounded-full
-bg-red-500
-"
-/>
-
-<span
-className="
-w-3
-h-3
-rounded-full
-bg-yellow-500
-"
-/>
-
-
-<span
-className="
-w-3
-h-3
-rounded-full
-bg-green-500
-"/>
-
-
-<p
-className="
-ml-4
-text-xs
-text-zinc-500
-font-mono
-"
->
-devkit-terminal
-</p>
-
-
-</div>
-
-
-
-
-{/* Terminal Body */}
-
-
-<div
-className="
-p-6
-font-mono
+bg-black/30
+px-6
+py-3
 text-sm
-leading-8
-text-zinc-300
-min-h-[300px]
-"
->
-
-
-<p>
-<span className="text-green-400">
-$
-</span>
-&nbsp; devkit
-</p>
-
-
-<div
-className="
-mt-4
 text-white
+backdrop-blur
+transition
+hover:bg-zinc-900
 "
+
 >
 
-<TypeAnimation
 
-sequence={[
-
-"Initializing DevKit...",
-1000,
-
-"Loading developer tools...",
-1000,
-
-"✓ Project Analyzer ready",
-800,
-
-"✓ Git Toolkit ready",
-800,
-
-"✓ API Tester ready",
-800,
-
-"✓ Environment Doctor ready",
-800,
-
-"DevKit is ready 🚀"
-
-]}
-
-speed={50}
-
-/>
-
-</div>
+<FaGithub size={16}/>
 
 
-<br/>
+GitHub
 
 
-<p>
-<span className="text-green-400">
-$
-</span>
-&nbsp;
-<span className="text-blue-400">
-devkit project health
-</span>
-</p>
+</motion.button>
 
-
-<p className="text-green-400">
-Health Score: 100/100
-</p>
-
-
-</div>
 
 
 
@@ -365,11 +528,67 @@ Health Score: 100/100
 
 
 
+
+
+
+
+{/* Version */}
+
+
+
+<motion.div
+
+
+initial={{
+
+opacity:0
+
+}}
+
+
+animate={{
+
+opacity:1
+
+}}
+
+
+transition={{
+
+delay:1
+
+}}
+
+
+
+className="
+mt-16
+font-mono
+text-sm
+text-zinc-600
+"
+
+>
+
+
+DevKit v0.1.0
+
+
+</motion.div>
+
+
+
+
+
 </div>
+
+
+
 
 
 </section>
 
-)
+
+);
 
 }

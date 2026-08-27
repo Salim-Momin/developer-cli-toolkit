@@ -2,6 +2,8 @@ import Hero from "@/components/sections/hero";
 import TerminalPlayground from "@/components/sections/terminal";
 import InstallSection from "@/components/install/InstallSection";
 import FeatureSection from "@/components/features/FeatureSection";
+import Footer from "@/components/sections/Footer";
+
 export default function Home(){
 
 return(
@@ -12,6 +14,7 @@ return(
 <TerminalPlayground/>
 <InstallSection />
 <FeatureSection/>
+<Footer />
 </main>
 
 )

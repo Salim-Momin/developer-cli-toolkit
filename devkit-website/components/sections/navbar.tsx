@@ -66,10 +66,12 @@ top-0
 left-0
 right-0
 z-50
+bg-black/40
+supports-[backdrop-filter]:bg-black/30
+border-white/5
 border-b
 border-zinc-800
-bg-[#09090B]/80
-backdrop-blur-xl
+backdrop-blur-2xl
 "
 
 >
@@ -144,7 +146,7 @@ text-sm
 
 >
 
-devkit_
+{DEVKIT_LOGO}
 
 </div>
 
@@ -227,22 +229,31 @@ transition
 
 href="https://github/Salim-Momin.com"
 
-target="_blank"
-
 whileHover={{
-scale:1.08,
+scale:1.05
+}}
+
+whileTap={{
+scale:.97
 }}
 
 className="
 flex
 items-center
 gap-2
-font-mono
+rounded-xl
+border
+border-cyan-500/20
+bg-cyan-500/5
+px-4
+py-2
 text-sm
-text-zinc-400
-hover:text-white
-transition
+text-cyan-300
+transition-all
+hover:border-cyan-400
+hover:bg-cyan-500/10
 "
+
 
 >
 

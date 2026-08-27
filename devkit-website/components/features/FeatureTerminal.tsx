@@ -8,67 +8,231 @@ type Props = {
   type: string;
 };
 
+const outputs: Record<string, string> = {
 
-const outputs = {
+"project-info":`
 
-  project: `
-$ devkit project info
+📦 Project Information
 
-Analyzing project...
+developer-cli-toolkit
 
-✓ Framework detected
-✓ TypeScript enabled
-✓ Components found: 48
-✓ Files scanned: 324
 
-Project health: Excellent
-`,
+Project Overview
 
-  git: `
-$ devkit git health
+Name                 developer-cli-toolkit
+Primary Language     Python
+Project Size         833.89 KB
+Files                99
+Directories          21
 
-Checking repository...
-
-✓ Branch: main
-✓ Clean working tree
-✓ Remote connected
-✓ Latest commit synced
-
-Git status: Healthy
-`,
-
-  search: `
-$ devkit search "TODO"
-
-Searching source files...
-
-18 matches found
-
-src/app/page.tsx
-src/components/navbar.tsx
-src/hooks/useAuth.ts
-
-Search completed ✓
-`,
-
-  api: `
-$ devkit api get /users
-
-Sending request...
-
-Status: 200 OK
-
-Response time:
-245ms
-
-{
- success:true
-}
+README               ✓ Yes
+.gitignore           ✓ Yes
+Tests                ✓ Yes
+Git Repository       ✓ Yes
 
 `,
+
+
+
+"project-stats":`
+
+📊 Project Statistics
+
+Language Statistics
+
+Python               41
+TypeScript           15
+Markdown              8
+JSON                  5
+CSS                   1
+YAML                  1
+
+
+Top File Extensions
+
+.py                  41
+.tsx                 13
+.md                   8
+.json                 5
+.png                  5
+.svg                  5
+
+`,
+
+
+
+"project-health":`
+
+❤️ Project Health
+
+███████████████████░░░░░
+
+Health Score
+
+80 / 100
+
+
+README               ● PASS
+.gitignore           ● PASS
+Tests                ● PASS
+Environment          ● WARN
+Docker               ● WARN
+Git Repository       ● PASS
+
+
+Recommendations
+
+• Add a .env.example file
+
+• Consider Docker support
+
+`,
+
+
+
+"project-tree":`
+
+🌳 Project Tree
+
+developer-cli-toolkit
+
+├── src
+├── tests
+├── docs
+├── devkit-website
+├── README.md
+├── pyproject.toml
+├── requirements.txt
+├── CHANGELOG.md
+
+Summary
+
+10 directories
+
+35 files
+
+`,
+
+
+
+"search":`
+
+🔎 Smart Search
+
+Searching current project
+
+Query
+
+"import"
+
+
+225 matches found
+
+
+eslint.config.mjs
+
+Line 1
+
+import { defineConfig }
+
+Showing 5 of 225 matches
+
+`,
+
+
+
+"doctor":`
+
+🩺 Environment Doctor
+
+Development Environment
+
+
+Python          ✓ PASS
+
+Node.js         ✓ PASS
+
+Git             ✓ PASS
+
+Docker          ✓ PASS
+
+Java            ✓ PASS
+
+PostgreSQL      ✓ PASS
+
+VS Code         ✓ PASS
+
+GitHub CLI      ⚠ WARN
+
+
+Health Score
+
+90 / 100
+
+
+Recommendations
+
+• Install GitHub CLI
+
+• Start Docker daemon
+
+`,
+
+
+
+"git":`
+
+🌿 Git Status
+
+developer-cli-toolkit
+
+
+Working Tree
+
+Branch           main
+
+Staged           0
+
+Modified         0
+
+Untracked        0
+
+Deleted          0
+
+
+✓ Working tree is clean.
+
+`,
+
+
+
+"api":`
+
+🌐 API Tester
+
+GET https://api.example.com/users
+
+
+Status
+
+200 OK
+
+
+Response Time
+
+245 ms
+
+
+Content Type
+
+application/json
+
+
+✓ Request Successful
+
+`
+
 };
-
-
 export default function FeatureTerminal({
   type,
 }:Props){
@@ -216,17 +380,15 @@ bg-[length:100%_6px]
 
 
 <TypeAnimation
-
-sequence={[
-
-text,
-
-]}
-
-speed={35}
-
-cursor={true}
-
+  sequence={[
+    "Initializing DevKit...\n\n",
+    700,
+    "Loading module...\n",
+    500,
+    outputs[type],
+  ]}
+  speed={35}
+  cursor
 />
 
 

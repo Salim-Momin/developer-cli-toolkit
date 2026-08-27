@@ -166,7 +166,7 @@ export default function InstallCard({
           }}
           className="overflow-x-auto rounded-xl border border-cyan-500/10 bg-black/50 p-5 font-mono text-sm text-cyan-300"
         >
-          <span className="text-cyan-500">$ </span>
+          <span className="text-cyan-500">$</span>
 
           {command}
         </motion.pre>

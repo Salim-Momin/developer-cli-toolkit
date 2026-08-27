@@ -7,89 +7,119 @@ import FeatureCard from "./FeatureCard";
 import FeatureParticles from "./FeatureParticles";
 import FeatureIndicator from "./FeatureIndicator";
 
-
 const features = [
-
   {
-    title: "Project Analyzer",
-
+    title: "Project Information",
     description:
-      "Deeply analyze your codebase, detect project structure, frameworks, dependencies and overall project health directly from your terminal.",
-
-    icon: "🔍",
-
-    type: "project",
-
+      "Inspect any project instantly with a complete overview including language, project size, repository status, files, directories and development environment.",
+    icon: "📦",
+    type: "project-info",
     points: [
-      "Framework detection",
-      "Project statistics",
-      "File structure analysis",
-      "Project health report",
+      "Project overview",
+      "Language detection",
+      "Project size",
+      "Git repository",
     ],
   },
 
-
   {
-    title: "Git Toolkit",
-
+    title: "Project Statistics",
     description:
-      "Manage repositories faster with powerful Git utilities for status checking, branches, history and repository health.",
-
-    icon: "🌿",
-
-    type: "git",
-
+      "Visualize your project composition with language statistics, extension breakdowns and detailed file analytics.",
+    icon: "📊",
+    type: "project-stats",
     points: [
-      "Repository status",
-      "Branch tracking",
-      "Commit history",
-      "Git health monitoring",
+      "Language statistics",
+      "Extension breakdown",
+      "File analytics",
+      "Project metrics",
     ],
   },
 
+  {
+    title: "Project Health",
+    description:
+      "Automatically validate your project structure and receive health reports with recommendations to improve code quality.",
+    icon: "❤️",
+    type: "project-health",
+    points: [
+      "Health score",
+      "Configuration checks",
+      "Project diagnostics",
+      "Recommendations",
+    ],
+  },
+
+  {
+    title: "Project Tree",
+    description:
+      "Browse your complete project structure directly from the terminal with a clean tree view and folder hierarchy.",
+    icon: "🌳",
+    type: "project-tree",
+    points: [
+      "Directory tree",
+      "Folder hierarchy",
+      "Project structure",
+      "Tree summary",
+    ],
+  },
 
   {
     title: "Smart Search",
-
     description:
-      "Search your entire project instantly with developer-focused filtering, regex support and fast results.",
-
+      "Search across your entire project using text search, filename search, regex support and extension filtering.",
     icon: "🔎",
-
     type: "search",
-
     points: [
-      "Code searching",
+      "Text search",
+      "Filename search",
       "Regex support",
-      "File filtering",
-      "Fast results",
+      "Extension filters",
     ],
   },
 
+  {
+    title: "Environment Doctor",
+    description:
+      "Analyze your development environment and verify installed tools, versions and configuration before you start coding.",
+    icon: "🩺",
+    type: "doctor",
+    points: [
+      "Tool detection",
+      "Environment diagnostics",
+      "Version checks",
+      "Recommendations",
+    ],
+  },
+
+  {
+    title: "Git Toolkit",
+    description:
+      "Inspect repository status, branches, remotes, synchronization and commit history without leaving the terminal.",
+    icon: "🌿",
+    type: "git",
+    points: [
+      "Repository status",
+      "Branch management",
+      "Commit history",
+      "Git health",
+    ],
+  },
 
   {
     title: "API Tester",
-
     description:
-      "Test APIs directly from your terminal with request handling, response inspection and debugging tools.",
-
+      "Send HTTP requests directly from DevKit with support for GET, POST, PUT, PATCH and DELETE methods.",
     icon: "🌐",
-
     type: "api",
-
     points: [
-      "HTTP requests",
-      "JSON handling",
-      "Header support",
-      "Response analysis",
+      "GET requests",
+      "POST requests",
+      "PUT / PATCH",
+      "DELETE requests",
     ],
   },
-
 ];
-
-
-
-
 
 export default function FeatureSection(){
 

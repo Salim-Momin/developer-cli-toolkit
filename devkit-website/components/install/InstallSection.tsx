@@ -92,7 +92,7 @@ export default function InstallSection() {
         >
             <InstallCard
             title="GitHub"
-            command="git clone https://github.com/yourname/developer-cli-toolkit"
+            command="git clone https://github.com/Salim-Momin/developer-cli-toolkit"
             />
         </motion.div>
         </motion.div>

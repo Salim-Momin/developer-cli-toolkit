@@ -4,6 +4,9 @@ import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import DocsCards from "@/components/docs/DocsCards";
 import CommandPreview from "@/components/docs/CommandPreview";
+import InstallationGuide from "@/components/docs/InstallationGuide";
+import ExamplesSection from "@/components/docs/ExamplesSection";
+import DocsFooter from "@/components/docs/DocsFooter";
 
 export default function DocsPage(){
 
@@ -269,6 +272,12 @@ tools available inside the DevKit terminal.
 <DocsCards />
 
 <CommandPreview />
+
+<InstallationGuide />
+
+<ExamplesSection />
+
+<DocsFooter />
 
 </section>
 

@@ -571,7 +571,7 @@ text-zinc-600
 >
 
 
-DevKit v0.1.0
+DevKit v0.1.5
 
 
 </motion.div>

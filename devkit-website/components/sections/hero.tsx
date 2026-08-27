@@ -11,167 +11,126 @@ export default function Hero() {
 return (
 
 <section
-
+id="home"
 className="
 relative
-min-h-screen
 overflow-hidden
+min-h-screen
 flex
 items-center
 justify-center
 px-6
 pt-24
 "
-
 >
 
-
-
-{/* BACKGROUND */}
-
+{/* Background */}
 
 <div className="absolute inset-0">
 
+  {/* Radial Cyan Glow */}
 
-{/* radial glow */}
-
-<div
-
-className="
-absolute
-inset-0
-bg-[radial-gradient(circle_at_top,#06b6d420,transparent_60%)]
-"
-
-/>
+  <div
+  className="
+  absolute
+  inset-0
+  bg-[radial-gradient(circle_at_top,#06b6d420,transparent_60%)]
+  "
+  />
 
 
+  {/* Grid */}
 
-{/* grid */}
-
-<div
-
-className="
-absolute
-inset-0
-bg-[linear-gradient(rgba(255,255,255,.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.02)_1px,transparent_1px)]
-bg-[size:64px_64px]
-"
-
-/>
+  <div
+  className="
+  absolute
+  inset-0
+  bg-[linear-gradient(rgba(255,255,255,.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.02)_1px,transparent_1px)]
+  bg-[size:64px_64px]
+  "
+  />
 
 
+  {/* Cyan Floating Glow */}
 
+  <motion.div
 
+  animate={{
+    x:[
+      -40,
+      40,
+      -40
+    ],
 
-{/* cyan glow */}
+    y:[
+      0,
+      -40,
+      0
+    ]
+  }}
 
+  transition={{
+    duration:12,
+    repeat:Infinity,
+    ease:"easeInOut"
+  }}
 
-<motion.div
+  className="
+  absolute
+  left-20
+  top-10
+  h-96
+  w-96
+  rounded-full
+  bg-cyan-500/10
+  blur-[160px]
+  "
 
-animate={{
-
-x:[
--40,
-40,
--40
-],
-
-y:[
-0,
--30,
-0
-
-]
-
-}}
-
-transition={{
-
-duration:12,
-
-repeat:Infinity,
-
-ease:"easeInOut"
-
-}}
-
-
-className="
-absolute
-left-20
-top-20
-h-96
-w-96
-rounded-full
-bg-cyan-500/10
-blur-[160px]
-"
-
-/>
+  />
 
 
 
+  {/* Blue Floating Glow */}
+
+  <motion.div
+
+  animate={{
+    x:[
+      30,
+      -30,
+      30
+    ],
+
+    y:[
+      0,
+      50,
+      0
+    ]
+  }}
+
+  transition={{
+    duration:15,
+    repeat:Infinity,
+    ease:"easeInOut"
+  }}
 
 
-{/* blue glow */}
+  className="
+  absolute
+  right-0
+  bottom-0
+  h-[500px]
+  w-[500px]
+  rounded-full
+  bg-blue-500/10
+  blur-[180px]
+  "
 
-
-<motion.div
-
-animate={{
-
-x:[
-30,
--30,
-30
-],
-
-y:[
-0,
-50,
-0
-
-]
-
-}}
-
-transition={{
-
-duration:15,
-
-repeat:Infinity,
-
-ease:"easeInOut"
-
-}}
-
-
-className="
-absolute
-right-0
-bottom-0
-h-[500px]
-w-[500px]
-rounded-full
-bg-blue-500/10
-blur-[180px]
-"
-
-/>
-
-
+  />
 
 </div>
 
-
-
-
-
-
-
 {/* HERO CONTENT */}
-
 
 
 <div
@@ -179,6 +138,8 @@ blur-[180px]
 className="
 relative
 z-10
+mx-auto
+w-full
 max-w-5xl
 text-center
 "
@@ -583,7 +544,24 @@ DevKit v0.1.5
 </div>
 
 
+{/* Section Bottom Merge Glow */}
 
+<div
+
+className="
+pointer-events-none
+absolute
+bottom-0
+left-1/2
+-translate-x-1/2
+h-32
+w-[80%]
+rounded-full
+bg-cyan-500/10
+blur-[100px]
+"
+
+/>
 
 
 </section>

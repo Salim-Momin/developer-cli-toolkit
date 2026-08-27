@@ -1,11 +1,8 @@
 "use client";
-
-import { useState } from "react";
 import { motion } from "framer-motion";
 
 import FeatureCard from "./FeatureCard";
 import FeatureParticles from "./FeatureParticles";
-import FeatureIndicator from "./FeatureIndicator";
 
 const features = [
   {
@@ -124,13 +121,10 @@ const features = [
 export default function FeatureSection(){
 
 
-const [active,setActive] = useState(0);
-
-
-
 return (
 
 <section
+id="feature"
 
 className="
 relative
@@ -266,16 +260,6 @@ blur-[180px]
 
 
 <FeatureParticles />
-
-
-
-{/* Active navigation */}
-
-<FeatureIndicator
-
-active={active}
-
-/>
 
 
 
@@ -431,12 +415,6 @@ features.map((feature,index)=>(
 
 key={feature.title}
 
-
-
-onViewportEnter={()=>setActive(index)}
-
-
-
 viewport={{
 
 amount:.5
@@ -517,7 +495,24 @@ reverse={index % 2 !== 0}
 
 </div>
 
+{/* Section Bottom Merge Glow */}
 
+<div
+
+className="
+pointer-events-none
+absolute
+bottom-0
+left-1/2
+-translate-x-1/2
+h-32
+w-[80%]
+rounded-full
+bg-cyan-500/10
+blur-[100px]
+"
+
+/>
 
 </section>
 

@@ -7,7 +7,7 @@ import QuickCommand from "./QuickCommand";
 
 export default function InstallSection() {
   return (
-    <section className="relative overflow-hidden py-32">
+    <section id="installation" className="relative overflow-hidden py-32">
       {/* Background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#06b6d420,transparent_60%)]" />
@@ -133,6 +133,24 @@ export default function InstallSection() {
           </div>
         </motion.div>
       </div>
+      {/* Section Bottom Merge Glow */}
+
+<div
+
+className="
+pointer-events-none
+absolute
+bottom-0
+left-1/2
+-translate-x-1/2
+h-32
+w-[80%]
+rounded-full
+bg-cyan-500/10
+blur-[100px]
+"
+
+/>
     </section>
   );
 }

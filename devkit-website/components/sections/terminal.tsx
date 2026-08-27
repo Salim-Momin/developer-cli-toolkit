@@ -14,12 +14,12 @@ import { TypeAnimation } from "react-type-animation";
 
 
 const banner = `
-██████╗ ███████╗██╗   ██╗██╗  ██╗██╗████████╗
-██╔══██╗██╔════╝██║   ██║██║ ██╔╝██║╚══██╔══╝
-██║  ██║█████╗  ██║   ██║█████╔╝ ██║   ██║
-██║  ██║██╔══╝  ╚██╗ ██╔╝██╔═██╗ ██║   ██║
-██████╔╝███████╗ ╚████╔╝ ██║  ██╗██║   ██║
-╚═════╝ ╚══════╝  ╚═══╝  ╚═╝  ╚═╝╚═╝   ╚═╝
+██████╗ ███████╗██╗   ██ ╗██╗  ██╗██╗████████╗
+██╔══██╗██╔════╝██║   ██ ║██║ ██╔╝██║╚══██╔══╝
+██║  ██║█████╗  ██║   ██ ║█████╔╝ ██║   ██║
+██║  ██║██╔══╝  ╚██╗ ██╔ ╝██╔═██╗ ██║   ██║
+██████╔╝███████╗ ╚████╔╝  ██║  ██╗██║   ██║
+╚═════╝ ╚══════╝  ╚═══╝   ╚═╝  ╚═╝╚═╝   ╚═╝
 `;
 
 
@@ -66,14 +66,11 @@ Choose a command [0]:
 
 export default function Terminal(){
 
+
 const terminalRef =
 useRef<HTMLDivElement>(null);
 
 
-
-/*
-Scroll camera animation
-*/
 
 const {
 scrollYProgress
@@ -96,9 +93,11 @@ scrollYProgress,
 {
 stiffness:140,
 damping:20,
-mass:0.3
+mass:.3
 }
 );
+
+
 
 const scale =
 useTransform(
@@ -108,11 +107,12 @@ smooth,
 );
 
 
+
 const translateY =
 useTransform(
 smooth,
 [0,1],
-[70,0]
+[80,0]
 );
 
 
@@ -121,8 +121,10 @@ const scrollRotate =
 useTransform(
 smooth,
 [0,1],
-[30,0]
+[25,0]
 );
+
+
 
 const opacity =
 useTransform(
@@ -134,12 +136,6 @@ smooth,
 
 
 
-
-/*
-Mouse camera movement
-*/
-
-
 const mouseX =
 useMotionValue(0);
 
@@ -147,31 +143,27 @@ const mouseY =
 useMotionValue(0);
 
 
+
 const rotateY =
-useSpring(
-mouseX,
-{
+useSpring(mouseX,{
 stiffness:150,
-damping:20,
-mass:0.4
-}
-);
+damping:20
+});
+
 
 
 const rotateX =
-useSpring(
-mouseY,
-{
+useSpring(mouseY,{
 stiffness:150,
-damping:20,
-mass:0.4
-}
-);
+damping:20
+});
+
 
 
 function handleMouse(
 e:React.MouseEvent<HTMLDivElement>
 ){
+
 
 const box =
 e.currentTarget.getBoundingClientRect();
@@ -180,18 +172,22 @@ e.currentTarget.getBoundingClientRect();
 const x =
 e.clientX-box.left;
 
+
 const y =
 e.clientY-box.top;
 
 
+
 mouseX.set(
-(x-box.width/2)/18
+(x-box.width/2)/15
 );
+
 
 
 mouseY.set(
--(y-box.height/2)/18
+-(y-box.height/2)/15
 );
+
 
 }
 
@@ -200,21 +196,173 @@ mouseY.set(
 return (
 
 <section
+id="terminal"
 
 ref={terminalRef}
 
 className="
 relative
+overflow-hidden
 py-32
-max-w-6xl
-mx-auto
-px-6
 "
 
 >
 
 
-{/* Background Glow */}
+{/* OUTSIDE BACKGROUND */}
+
+
+<div className="
+absolute
+inset-0
+">
+
+
+{/* Radial */}
+
+<div
+
+className="
+absolute
+inset-0
+bg-[radial-gradient(circle_at_top,#06b6d420,transparent_60%)]
+"
+
+/>
+
+
+
+{/* Animated Grid */}
+
+<motion.div
+
+animate={{
+
+backgroundPosition:[
+"0px 0px",
+"64px 64px"
+]
+
+}}
+
+transition={{
+
+duration:12,
+repeat:Infinity,
+ease:"linear"
+
+}}
+
+className="
+absolute
+inset-0
+bg-[linear-gradient(rgba(255,255,255,.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.02)_1px,transparent_1px)]
+bg-[size:64px_64px]
+"
+
+/>
+
+
+
+
+{/* Cyan Orb */}
+
+<motion.div
+
+animate={{
+
+x:[
+-40,
+40,
+-40
+],
+
+y:[
+0,
+-40,
+0
+
+]
+
+}}
+
+transition={{
+
+duration:12,
+repeat:Infinity,
+ease:"easeInOut"
+
+}}
+
+className="
+absolute
+left-20
+top-20
+h-96
+w-96
+rounded-full
+bg-cyan-500/10
+blur-[160px]
+"
+
+/>
+
+
+
+
+{/* Blue Orb */}
+
+<motion.div
+
+animate={{
+
+x:[
+40,
+-40,
+40
+],
+
+y:[
+0,
+50,
+0
+
+]
+
+}}
+
+transition={{
+
+duration:15,
+repeat:Infinity,
+ease:"easeInOut"
+
+}}
+
+className="
+absolute
+right-0
+bottom-0
+h-[500px]
+w-[500px]
+rounded-full
+bg-blue-500/10
+blur-[180px]
+"
+
+/>
+
+
+
+</div>
+
+
+
+
+
+
+{/* Glow Behind Window */}
+
 
 <motion.div
 
@@ -223,7 +371,7 @@ style={{
 scale:useTransform(
 smooth,
 [0,1],
-[0.5,1.4]
+[.5,1.4]
 )
 
 }}
@@ -234,16 +382,11 @@ left-1/2
 top-1/2
 -translate-x-1/2
 -translate-y-1/2
-
-w-[600px]
-h-[400px]
-
-bg-cyan-500/20
-
-blur-[150px]
-
+h-[500px]
+w-[700px]
 rounded-full
-
+bg-cyan-500/20
+blur-[160px]
 "
 
 />
@@ -253,14 +396,29 @@ rounded-full
 
 
 <div
+
+className="
+relative
+z-10
+mx-auto
+max-w-6xl
+px-6
+"
+
+>
+
+
+
+<div
+
 style={{
 perspective:1400
 }}
+
 >
 
 
 <motion.div
-
 
 onMouseMove={handleMouse}
 
@@ -273,16 +431,14 @@ y:translateY,
 
 opacity,
 
-
 rotateX,
 
-
 rotateY,
-
 
 transformPerspective:1400
 
 }}
+
 
 
 whileHover={{
@@ -294,29 +450,19 @@ scale:1.03
 
 
 className="
-
 relative
-
 rounded-3xl
-
 overflow-hidden
-
 border
-
 border-zinc-800
-
 bg-[#050505]
-
 shadow-[0_70px_150px_rgba(0,0,0,.85)]
-
 "
 
 >
 
 
-
-{/* Header */}
-
+{/* HEADER */}
 
 <div
 
@@ -333,38 +479,18 @@ border-zinc-800
 >
 
 
-<span className="
-h-3
-w-3
-rounded-full
-bg-red-500
-animate-pulse
-"/>
+<span className="h-3 w-3 rounded-full bg-red-500 animate-pulse"/>
 
+<span className="h-3 w-3 rounded-full bg-yellow-400 animate-pulse"/>
 
-<span className="
-h-3
-w-3
-rounded-full
-bg-yellow-400
-animate-pulse
-"/>
-
-
-<span className="
-h-3
-w-3
-rounded-full
-bg-green-400
-animate-pulse
-"/>
+<span className="h-3 w-3 rounded-full bg-green-400 animate-pulse"/>
 
 
 <span className="
 ml-3
 text-xs
-text-zinc-500
 font-mono
+text-zinc-500
 ">
 
 devkit-terminal
@@ -378,9 +504,7 @@ devkit-terminal
 
 
 
-
-{/* Screen */}
-
+{/* SCREEN */}
 
 <div
 
@@ -394,105 +518,31 @@ font-mono
 >
 
 
-{/* Scanlines */}
+{/* INNER GRID */}
 
-<motion.div
-
-animate={{
-y:[
-"-100%",
-"100%"
-]
-}}
-
-transition={{
-
-duration:8,
-
-repeat:Infinity,
-
-ease:"linear"
-
-}}
+<div
 
 className="
-
 absolute
-
 inset-0
-
-z-20
-
-pointer-events-none
-
-opacity-[0.07]
-
-bg-[linear-gradient(
-transparent_50%,
-cyan_50%
-)]
-
-bg-[length:100%_5px]
-
+bg-[linear-gradient(rgba(6,182,212,.05)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,.05)_1px,transparent_1px)]
+bg-[size:48px_48px]
 "
 
 />
 
 
 
-{/* Reflection */}
-
-<motion.div
-
-animate={{
-
-x:[
-"-120%",
-"120%"
-]
-
-}}
-
-transition={{
-
-duration:5,
-
-repeat:Infinity,
-
-ease:"linear"
-
-}}
+<div
 
 className="
-
 absolute
-
-top-0
-
-left-0
-
-h-full
-
-w-1/3
-
-z-30
-
-pointer-events-none
-
-bg-gradient-to-r
-
-from-transparent
-
-via-white/10
-
-to-transparent
-
-skew-x-12
-
+inset-0
+bg-cyan-500/10
+blur-[120px]
 "
 
 />
-
 
 
 
@@ -524,7 +574,6 @@ leading-tight
 
 <motion.div
 
-
 animate={{
 
 boxShadow:[
@@ -542,36 +591,24 @@ boxShadow:[
 transition={{
 
 duration:3,
-
 repeat:Infinity
 
 }}
 
-
 className="
-
 mt-8
-
 rounded-xl
-
 border
-
 border-cyan-900
-
 bg-black/70
-
 p-6
-
 text-zinc-300
-
 "
 
 >
 
 
-
 <TypeAnimation
-
 
 sequence={[
 
@@ -599,12 +636,9 @@ output
 
 ]}
 
-
 speed={18}
 
-
 cursor
-
 
 />
 
@@ -616,16 +650,35 @@ cursor
 </div>
 
 
-
 </div>
-
-
 
 
 </motion.div>
 
+
 </div>
 
+
+</div>
+
+{/* Section Bottom Merge Glow */}
+
+<div
+
+className="
+pointer-events-none
+absolute
+bottom-0
+left-1/2
+-translate-x-1/2
+h-32
+w-[80%]
+rounded-full
+bg-cyan-500/10
+blur-[100px]
+"
+
+/>
 
 </section>
 

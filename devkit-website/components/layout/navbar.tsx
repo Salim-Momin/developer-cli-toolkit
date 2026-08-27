@@ -5,23 +5,27 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 
 
-const links = [
-  {
-    name: "Features",
-    href: "#features",
-  },
-  {
-    name: "Terminal",
-    href: "#terminal",
-  },
-  {
-    name: "Docs",
-    href: "#docs",
-  },
-  {
-    name: "Install",
-    href: "#install",
-  },
+const navLinks = [
+{
+name:"Home",
+href:"#home"
+},
+{
+name:"Terminal",
+href:"#terminal"
+},
+{
+name:"Features",
+href:"#features"
+},
+{
+name:"Install",
+href:"#installation"
+},
+{
+name:"Docs",
+href:"/docs"
+}
 ];
 
 
@@ -169,7 +173,7 @@ text-sm
 
 {
 
-links.map((link)=>(
+navLinks.map((link)=>(
 
 
 <motion.div

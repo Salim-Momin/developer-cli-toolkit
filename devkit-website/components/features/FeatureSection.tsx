@@ -124,7 +124,7 @@ export default function FeatureSection(){
 return (
 
 <section
-id="feature"
+id="features"
 
 className="
 relative

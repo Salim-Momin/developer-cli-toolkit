@@ -227,7 +227,7 @@ transition
 
 <motion.a
 
-href="https://github/Salim-Momin.com"
+href="https://github.com/Salim-Momin/developer-cli-toolkit"
 
 whileHover={{
 scale:1.05

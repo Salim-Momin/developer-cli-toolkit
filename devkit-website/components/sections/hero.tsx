@@ -408,7 +408,7 @@ scale:.95
 
 }}
 
-
+id="installation"
 
 className="
 rounded-xl
@@ -436,7 +436,7 @@ Install DevKit
 
 
 
-<motion.button
+<motion.a
 
 
 whileHover={{
@@ -451,7 +451,6 @@ whileTap={{
 scale:.95
 
 }}
-
 
 
 className="
@@ -471,6 +470,7 @@ transition
 hover:bg-zinc-900
 "
 
+href="https://github.com/Salim-Momin/developer-cli-toolkit"
 >
 
 
@@ -480,7 +480,7 @@ hover:bg-zinc-900
 GitHub
 
 
-</motion.button>
+</motion.a>
 
 
 

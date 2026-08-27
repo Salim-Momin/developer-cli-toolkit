@@ -38,3 +38,7 @@ body {
 
   min-height:100vh;
 }
+
+section {
+  scroll-margin-top: 90px;
+}

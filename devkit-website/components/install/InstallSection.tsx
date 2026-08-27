@@ -58,7 +58,7 @@ export default function InstallSection() {
             },
             },
         }}
-        className="mt-20 grid gap-8 lg:grid-cols-2"
+        className="mt-20 grid gap-8 lg:grid-cols-2 md:grid-cols-2 gap-8"
         >
         <motion.div
             variants={{

@@ -111,10 +111,10 @@ export default function InstallCard({
         className="absolute top-0 left-0 h-full w-1/3 skew-x-[-20deg] bg-gradient-to-r from-transparent via-white/10 to-transparent"
       />
 
-      <div className="relative z-20 p-8">
+      <div className="relative z-20 p-4 sm:p8">
         {/* Header */}
 
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-cyan-500/10 p-3">
               <Terminal
@@ -160,16 +160,46 @@ export default function InstallCard({
 
         {/* Command */}
 
-        <motion.pre
-          whileHover={{
-            scale: 1.01,
-          }}
-          className="overflow-x-auto rounded-xl border border-cyan-500/10 bg-black/50 p-5 font-mono text-sm text-cyan-300"
-        >
-          <span className="text-cyan-500">$</span>
+            {/* Command */}
 
-          {command}
-        </motion.pre>
+<motion.div
+  whileHover={{
+    scale: 1.01,
+  }}
+  className="
+  rounded-xl
+  border
+  border-cyan-500/10
+  bg-black/50
+  p-4
+  sm:p-5
+  overflow-hidden
+  "
+>
+
+<pre
+className="
+whitespace-pre-wrap
+break-words
+overflow-x-auto
+font-mono
+text-xs
+sm:text-sm
+leading-relaxed
+text-cyan-300
+"
+>
+
+<span className="text-cyan-500">
+$
+</span>{" "}
+
+{command}
+
+</pre>
+
+
+</motion.div>
 
         {/* Footer */}
 

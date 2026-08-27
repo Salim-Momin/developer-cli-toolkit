@@ -1,7 +1,10 @@
 "use client";
 
+import { useState } from "react";
+
 import { FaGithub } from "react-icons/fa";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { Menu, X } from "lucide-react";
 import Link from "next/link";
 
 
@@ -38,8 +41,11 @@ const DEVKIT_LOGO = `
 ╚═════╝ ╚══════╝  ╚═══╝  ╚═╝  ╚═╝╚═╝   ╚═╝
 `;
 
-
 export default function Navbar() {
+
+
+const [open,setOpen] = useState(false);
+
 
 
 return (
@@ -66,11 +72,9 @@ top-0
 left-0
 right-0
 z-50
-bg-black/40
-supports-[backdrop-filter]:bg-black/30
-border-white/5
 border-b
 border-zinc-800
+bg-black/40
 backdrop-blur-2xl
 "
 
@@ -94,16 +98,14 @@ justify-between
 
 {/* LOGO */}
 
+
 <Link href="/">
+
 
 <motion.div
 
 whileHover={{
 scale:1.05,
-}}
-
-transition={{
-duration:0.2,
 }}
 
 className="
@@ -113,51 +115,51 @@ font-mono
 text-[7px]
 leading-[7px]
 text-cyan-400
-drop-shadow-[0_0_15px_rgba(34,211,238,0.7)]
-hover:text-white
-transition
-duration-300
-cursor-pointer
+drop-shadow-[0_0_15px_rgba(34,211,238,.7)]
 "
 
 >
 
+
 <pre>
-
 {DEVKIT_LOGO}
-
 </pre>
 
 
 </motion.div>
 
-
-
 {/* Mobile Logo */}
 
-<div
+<motion.div
+
+whileHover={{
+scale:1.05,
+}}
 
 className="
 md:hidden
+w-[140px]
 font-mono
-text-green-400
-text-sm
+text-[3px]
+leading-[3px]
+text-cyan-400
+drop-shadow-[0_0_10px_rgba(34,211,238,.7)]
+overflow-hidden
 "
 
 >
 
+<pre>
 {DEVKIT_LOGO}
+</pre>
 
-</div>
-
+</motion.div>
 
 </Link>
 
 
+{/* Desktop Navigation */}
 
-
-
-{/* NAV LINKS */}
 
 <nav
 
@@ -183,11 +185,7 @@ navLinks.map((link)=>(
 key={link.name}
 
 whileHover={{
-y:-2,
-}}
-
-transition={{
-duration:0.2,
+y:-2
 }}
 
 >
@@ -198,8 +196,8 @@ href={link.href}
 
 className="
 text-zinc-400
-hover:text-white
 transition
+hover:text-cyan-400
 "
 
 >
@@ -223,7 +221,25 @@ transition
 
 
 
-{/* RIGHT SIDE */}
+
+
+{/* Right Actions */}
+
+
+<div
+
+className="
+flex
+items-center
+gap-3
+"
+
+>
+
+
+
+{/* Github */}
+
 
 <motion.a
 
@@ -234,7 +250,7 @@ scale:1.05
 }}
 
 whileTap={{
-scale:.97
+scale:.95
 }}
 
 className="
@@ -249,11 +265,9 @@ px-4
 py-2
 text-sm
 text-cyan-300
-transition-all
 hover:border-cyan-400
-hover:bg-cyan-500/10
+transition
 "
-
 
 >
 
@@ -275,11 +289,164 @@ GitHub
 
 
 
+
+
+
+
+{/* Mobile Menu Button */}
+
+
+<button
+
+onClick={()=>setOpen(!open)}
+
+className="
+lg:hidden
+rounded-xl
+border
+border-zinc-800
+bg-black/40
+p-2
+text-zinc-300
+"
+
+>
+
+
+{
+open ?
+
+<X size={22}/>
+
+:
+
+<Menu size={22}/>
+
+}
+
+
+</button>
+
+
+
 </div>
 
 
-</motion.header>
 
+</div>
+
+
+
+
+
+
+
+{/* Mobile Menu */}
+
+
+<AnimatePresence>
+
+
+{
+
+open && (
+
+
+<motion.div
+
+initial={{
+opacity:0,
+height:0
+}}
+
+animate={{
+opacity:1,
+height:"auto"
+}}
+
+exit={{
+opacity:0,
+height:0
+}}
+
+transition={{
+duration:.3
+}}
+
+className="
+lg:hidden
+border-t
+border-zinc-800
+bg-black/80
+backdrop-blur-xl
+overflow-hidden
+"
+
+>
+
+
+<div
+
+className="
+flex
+flex-col
+gap-6
+px-6
+py-8
+font-mono
+"
+
+>
+
+
+{
+
+navLinks.map((link)=>(
+
+
+<Link
+
+key={link.name}
+
+href={link.href}
+
+onClick={()=>setOpen(false)}
+
+className="
+text-zinc-400
+transition
+hover:text-cyan-400
+"
+
+>
+
+{link.name}
+
+</Link>
+
+
+))
+
+}
+
+
+</div>
+
+
+
+</motion.div>
+
+
+)
+
+}
+
+
+</AnimatePresence>
+
+
+
+</motion.header>
 
 );
 
